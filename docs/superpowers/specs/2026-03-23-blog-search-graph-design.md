@@ -8,7 +8,7 @@ ahrism 블로그에 검색 필터와 그래프 기반 포스트 탐색 기능을
 
 | 항목 | 설명 |
 |------|------|
-| 제목 유사도 검색 | 키워드 매칭 (기본) + TF-IDF 기반 의미 검색 (토글) |
+| 제목 유사도 검색 | 키워드 매칭 (기본) + TF-IDF 키워드 가중 검색 (토글) |
 | 태그 검색 | 태그 칩 클릭으로 필터링 (복수 선택, OR 조건) |
 | 그래프 탐색 | Cytoscape.js로 포스트 간 유사도 그래프 시각화 |
 | 포스트 추천 | 각 포스트 하단에 깊이 조절(2~5) 서브그래프 |
@@ -31,14 +31,23 @@ ahrism 블로그에 검색 필터와 그래프 기반 포스트 탐색 기능을
 1. 모든 포스트의 제목 + 요약 + 본문(content.md) 읽기
 2. `ko-sroberta-multitask` (sentence-transformers)로 포스트별 임베딩 생성
 3. 모든 포스트 쌍의 cosine similarity 계산
-4. threshold(예: 0.3) 이상인 쌍을 edge로 저장
-5. scikit-learn `TfidfVectorizer`로 각 포스트에서 TF-IDF 상위 20개 키워드 추출
+4. 노드당 최대 8개 엣지만 유지 (weight 상위), 최소 threshold 0.3 이상
+5. `konlpy` Mecab 토크나이저 + scikit-learn `TfidfVectorizer`로 각 포스트에서 TF-IDF 상위 20개 키워드 추출
 6. `blog/graph.json` 출력
+
+### 한국어 토크나이징
+`TfidfVectorizer`에 `konlpy.tag.Mecab`을 토크나이저로 지정:
+```python
+from konlpy.tag import Mecab
+mecab = Mecab()
+vectorizer = TfidfVectorizer(tokenizer=mecab.morphs, max_features=5000)
+```
 
 ### 의존성 (pyproject.toml)
 - `sentence-transformers`
 - `scikit-learn`
 - `torch` (CUDA)
+- `konlpy` (Mecab 토크나이저)
 
 ### 실행
 ```bash
@@ -65,6 +74,10 @@ uv run build_graph.py
 }
 ```
 
+### 빈 상태 처리
+- 포스트 0개: `graph.json`에 빈 배열 (`{ "nodes": [], "edges": [] }`)
+- 포스트 1개: 노드 1개, 엣지 0개로 정상 생성
+
 ---
 
 ## 2. 블로그 페이지 (`blog/index.html`) 개편
@@ -72,7 +85,7 @@ uv run build_graph.py
 ### 레이아웃
 ```
 ┌─────────────────────────────────────┐
-│ [검색바]  [의미검색 토글]            │
+│ [검색바]  [키워드 가중 검색 토글]     │
 │ [태그1] [태그2] [태그3] ...         │
 ├─────────────────────────────────────┤
 │ [◉ 그래프] [○ 리스트]  ← 뷰 토글   │
@@ -86,9 +99,11 @@ uv run build_graph.py
 
 ### 그래프 뷰 (Cytoscape.js)
 - `graph.json`에서 노드/엣지 로드
+- 레이아웃: `fcose` (force-directed), edge weight를 ideal edge length에 반비례 매핑
 - 노드 = 포스트 (제목 라벨), 엣지 = 유사도 (weight로 굵기/투명도)
 - 노드 클릭 → 해당 포스트로 이동
 - 검색/태그 필터 시 → 매칭 노드 하이라이트, 비매칭 노드 dim 처리
+- 빈 상태: 노드 0~1개일 경우 "포스트가 더 추가되면 그래프가 표시됩니다" 메시지 + 리스트 뷰로 자동 전환
 
 ### 리스트 뷰
 - 기존 `renderPostList`와 동일한 형태
@@ -96,11 +111,15 @@ uv run build_graph.py
 
 ### 검색 동작
 - **기본 모드:** 제목/요약 텍스트에 입력값 포함 여부로 필터
-- **의미검색 토글 ON:** 입력 키워드를 각 노드의 `tfidf` 키와 매칭, 점수 합산으로 정렬/필터
+- **키워드 가중 검색 토글 ON:** 입력 키워드를 각 노드의 `tfidf` 키와 매칭, 점수 합산으로 정렬/필터
+- 검색 입력에 300ms debounce 적용
 
 ### 태그 필터
 - `graph.json` 노드에서 전체 태그 목록 추출, 칩 형태로 표시
 - 클릭하면 활성/비활성 토글, 복수 선택 가능 (OR 조건)
+
+### 에러 처리
+- `graph.json` 로딩 실패 시 → `posts.json`에서 직접 로드, 리스트 뷰 전용 모드로 폴백, 그래프 토글 비활성화
 
 ---
 
@@ -121,22 +140,30 @@ uv run build_graph.py
 
 ### 동작
 - `graph.json`에서 현재 포스트를 루트로 BFS, 슬라이더 깊이만큼 탐색
+- BFS 시 각 깊이 레벨에서 weight 상위 5개 노드만 확장 (그래프 폭발 방지)
 - 루트 노드 강조 (primary 색상 `#dc00c9`), 나머지는 깊이에 따라 점점 dim
 - 슬라이더 변경 시 실시간 서브그래프 재렌더링
 - 노드 클릭 → 해당 포스트로 이동
 - 초기 깊이: 2
+- 이웃 노드가 없으면 서브그래프 섹션 숨김
 
 ---
 
-## 4. 공용 그래프 모듈 (`graph.js`)
+## 4. 모듈 책임 분리
 
-Cytoscape.js 렌더링/필터 로직을 공용 모듈로 분리:
+### `app.js` — 데이터 레이어
+- `fetchPosts(jsonPath)` — 기존 유지
+- `fetchGraph(jsonPath)` — graph.json 로드
+- `renderPostList(posts, container, basePath)` — 기존 유지
+- `searchPosts(nodes, query, mode)` — 키워드/TF-IDF 검색, 매칭 node id 배열 반환
+- `filterByTags(nodes, activeTags)` — 태그 필터, 매칭 node id 배열 반환
+- `getSlugFromURL()` — 기존 유지
 
-### 주요 함수
-- `initGraph(container, graphData, options)` — Cytoscape 인스턴스 생성 + 스타일 적용
-- `filterGraph(cy, { query, tags, semantic })` — 검색/태그 필터 적용 (하이라이트/dim)
-- `renderSubgraph(container, graphData, rootId, depth)` — 특정 노드 중심 서브그래프 렌더링
-- `highlightMatches(cy, matchedIds)` — 매칭 노드 하이라이트
+### `graph.js` — Cytoscape.js 프레젠테이션 레이어
+- `initGraph(container, graphData, options)` — Cytoscape 인스턴스 생성, fcose 레이아웃, 스타일 적용
+- `highlightNodes(cy, matchedIds)` — 매칭 노드 하이라이트, 비매칭 dim
+- `resetHighlight(cy)` — 하이라이트 초기화
+- `renderSubgraph(container, graphData, rootId, depth)` — BFS 서브그래프 렌더링 (깊이별 top-5 확장)
 
 ### 스타일
 - 노드 색상: `#4a62ff` (secondary), 루트/하이라이트: `#dc00c9` (primary)
@@ -153,8 +180,8 @@ scripts/
   build_graph.py          # 임베딩 계산 + graph.json 생성
   pyproject.toml          # uv 프로젝트 의존성
 blog/
-  graph.json              # 빌드 산출물 (git 추적)
-graph.js                  # Cytoscape.js 공용 모듈
+  graph.json              # 빌드 산출물 (git 추적, 주의: posts.json 변경 시 반드시 재빌드)
+graph.js                  # Cytoscape.js 프레젠테이션 레이어
 ```
 
 ### 수정
@@ -162,11 +189,12 @@ graph.js                  # Cytoscape.js 공용 모듈
 blog/index.html           # 그래프 뷰 + 리스트 뷰 토글, 검색/필터 UI
 posts/_template/index.html # 하단 서브그래프 섹션 추가
 style.css                 # 검색바, 태그 필터, 뷰 토글, 슬라이더 스타일
-app.js                    # 검색/필터 로직 (키워드 + TF-IDF 매칭)
+app.js                    # 데이터 레이어: fetchGraph, searchPosts, filterByTags 추가
 ```
 
 ### CDN 추가
-- Cytoscape.js (`blog/index.html`, `posts/_template/index.html`)
+- Cytoscape.js v3.28+ (`blog/index.html`, `posts/_template/index.html`)
+- cytoscape-fcose 레이아웃 플러그인
 
 ---
 
@@ -178,3 +206,5 @@ app.js                    # 검색/필터 로직 (키워드 + TF-IDF 매칭)
 3. `cd scripts && uv run build_graph.py` 실행
 4. `blog/graph.json` 업데이트됨
 5. git commit & push
+
+**주의:** `blog/graph.json`은 빌드 산출물이지만 GitHub Pages 배포를 위해 git에 추적한다. `posts.json` 또는 `content.md`를 변경한 뒤 `build_graph.py`를 실행하지 않으면 그래프 데이터가 불일치할 수 있다.
