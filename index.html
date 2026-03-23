@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,6 @@
       <ul><li><strong><a href="./">ahrism</a></strong></li></ul>
       <ul>
         <li><a href="#about" class="active">About</a></li>
-        <li><a href="#projects">Projects</a></li>
         <li><a href="./blog/">Blog</a></li>
       </ul>
     </nav>
@@ -35,25 +34,16 @@
       </div>
     </section>
 
-    <!-- Projects section -->
-    <section id="projects">
-      <div class="section-label">Projects</div>
-      <div class="project-grid">
-        <article class="project-card">
-          <h3>조용히, 더 크게</h3>
-          <p>의성어로...</p>
-          <div><span class="tag">DeepLearning</span></div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Recent Posts section -->
-    <section id="recent-posts">
+    <!-- Post Graph section -->
+    <section id="post-graph">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="section-label">Recent Posts</div>
-        <a href="./blog/" class="accent-secondary" style="font-size:0.85rem">View All →</a>
+        <div class="section-label">Posts</div>
+        <a href="./blog/" class="accent-secondary" style="font-size:0.85rem">리스트로 보기 →</a>
       </div>
-      <div id="posts-container"></div>
+      <div class="graph-container" id="graph-container"></div>
+      <div id="graph-fallback" style="display:none">
+        <div id="posts-container"></div>
+      </div>
     </section>
   </main>
 
@@ -61,12 +51,32 @@
     <small>&copy; 2024 ahrism</small>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
   <script src="./app.js"></script>
+  <script src="./graph.js"></script>
   <script>
-    fetchPosts('./blog/posts.json').then(posts => {
-      const container = document.getElementById('posts-container');
-      renderPostList(posts.slice(0, 3), container, './posts/');
-    });
+    (async () => {
+      const graphData = await fetchGraph('./blog/graph.json');
+      const posts = await fetchPosts('./blog/posts.json');
+      const hasGraph = graphData && graphData.nodes.length > 1;
+
+      if (hasGraph) {
+        initGraph(document.getElementById('graph-container'), graphData, {
+          onNodeClick: function (slug) {
+            window.location.href = './posts/' + slug + '/';
+          },
+        });
+      } else {
+        // 그래프 데이터 부족 시 리스트 폴백
+        document.getElementById('graph-container').style.display = 'none';
+        const fallback = document.getElementById('graph-fallback');
+        fallback.style.display = '';
+        renderPostList(posts, document.getElementById('posts-container'), './posts/');
+      }
+    })();
   </script>
 </body>
 </html>

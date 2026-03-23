@@ -13,7 +13,6 @@
       <ul><li><strong><a href="../">ahrism</a></strong></li></ul>
       <ul>
         <li><a href="../#about">About</a></li>
-        <li><a href="../#projects">Projects</a></li>
         <li><a href="./" class="active">Blog</a></li>
       </ul>
     </nav>
@@ -35,17 +34,17 @@
 
     <!-- View toggle -->
     <div class="view-toggle">
-      <button id="btn-graph" class="active">그래프</button>
-      <button id="btn-list">리스트</button>
+      <button id="btn-graph">그래프</button>
+      <button id="btn-list" class="active">리스트</button>
     </div>
 
-    <!-- Graph view -->
-    <div id="graph-view">
+    <!-- Graph view (hidden by default) -->
+    <div id="graph-view" style="display:none">
       <div class="graph-container" id="graph-container"></div>
     </div>
 
-    <!-- List view (hidden by default) -->
-    <div id="list-view" style="display:none">
+    <!-- List view -->
+    <div id="list-view">
       <div id="posts-container"></div>
     </div>
   </main>
@@ -54,6 +53,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
   <script src="../app.js"></script>
@@ -87,7 +87,7 @@
       const btnList = document.getElementById('btn-list');
       const graphView = document.getElementById('graph-view');
       const listView = document.getElementById('list-view');
-      let currentView = hasGraph ? 'graph' : 'list';
+      let currentView = 'list';
       let cy = null;
 
       function setView(view) {
