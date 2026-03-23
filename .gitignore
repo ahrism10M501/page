@@ -2,3 +2,6 @@
 .claude/
 CLAUDE.md
 .worktrees/
+scripts/.venv/
+__pycache__/
+*.pyc
