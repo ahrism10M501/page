@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... — ahrism</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github-dark.min.css">
+</head>
+<body>
+  <header class="container">
+    <nav>
+      <ul><li><strong><a href="../../">ahrism</a></strong></li></ul>
+      <ul>
+        <li><a href="../../#about">About</a></li>
+        <li><a href="../../#projects">Projects</a></li>
+        <li><a href="../../blog/" class="active">Blog</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <a href="../../blog/" class="accent-secondary" style="font-size:0.85rem">← Back to Blog</a>
+    <div id="post-header">
+      <h1 id="post-title"></h1>
+      <div class="post-meta" id="post-meta"></div>
+    </div>
+    <article id="post-content" class="post-content"></article>
+  </main>
+  <footer class="container">
+    <small>&copy; 2024 ahrism</small>
+  </footer>
+
+  <script src="../../app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    (async () => {
+      const slug = getSlugFromURL();
+
+      // Load metadata from posts.json
+      const posts = await fetchPosts('../../blog/posts.json');
+      const post = posts.find(p => p.slug === slug);
+      if (post) {
+        document.title = `${post.title} — ahrism`;
+        document.getElementById('post-title').textContent = post.title;
+        document.getElementById('post-meta').innerHTML =
+          `${post.date} ${post.tags.map(t => `<span class="tag">${t}</span>`).join(' ')}`;
+      }
+
+      // Load and render markdown
+      const res = await fetch('./content.md');
+      if (res.ok) {
+        const md = await res.text();
+        document.getElementById('post-content').innerHTML = marked.parse(md);
+        document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+      } else {
+        document.getElementById('post-content').innerHTML = '<p>글을 불러올 수 없습니다.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>
