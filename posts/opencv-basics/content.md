@@ -1,3 +1,10 @@
+---
+title: "OpenCV로 시작하는 컴퓨터 비전"
+date: 2026-03-23
+tags: [computer-vision, python, opencv]
+summary: "OpenCV로 이미지 전처리, 엣지 검출, 실시간 영상 처리까지"
+---
+
 # OpenCV로 시작하는 컴퓨터 비전
 
 OpenCV는 실시간 이미지/영상 처리를 위한 오픈소스 라이브러리입니다. C++로 작성되었지만 Python 바인딩이 강력합니다.

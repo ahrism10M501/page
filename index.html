@@ -18,6 +18,14 @@
     </nav>
   </header>
   <main class="container">
+    <!-- Post Graph section -->
+    <section id="post-graph">
+      <div class="graph-container" id="graph-container"></div>
+      <div id="graph-fallback" style="display:none">
+        <div id="posts-container"></div>
+      </div>
+    </section>
+
     <!-- About section -->
     <section id="about">
       <div class="section-label">About</div>
@@ -32,18 +40,15 @@
         <span class="tag">Linux</span>
         <span class="tag">Docker</span>
       </div>
-    </section>
 
-    <!-- Post Graph section -->
-    <section id="post-graph">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="section-label">Posts</div>
-        <a href="./blog/" class="accent-secondary" style="font-size:0.85rem">리스트로 보기 →</a>
-      </div>
-      <div class="graph-container" id="graph-container"></div>
-      <div id="graph-fallback" style="display:none">
-        <div id="posts-container"></div>
-      </div>
+      <h3>관심사</h3>
+      <p>실용적인 AI 시스템 개발에 관심이 있습니다. 이론적 토대 위에 실제로 동작하는 것을 만드는 과정을 즐깁니다.</p>
+
+      <h3>프로젝트</h3>
+      <div id="projects-container"></div>
+
+      <h3>학력</h3>
+      <p>학력 내용을 여기에 추가하세요.</p>
     </section>
   </main>
 
@@ -61,6 +66,14 @@
     (async () => {
       const graphData = await fetchGraph('./blog/graph.json');
       const posts = await fetchPosts('./blog/posts.json');
+
+      // Projects
+      fetch('./projects.json')
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(projects => {
+          renderProjectCards(projects, document.getElementById('projects-container'));
+        })
+        .catch(err => console.error('projects.json load failed:', err));
       const hasGraph = graphData && graphData.nodes.length > 1;
 
       if (hasGraph) {

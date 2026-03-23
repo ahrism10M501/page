@@ -1,7 +1,14 @@
+# Claude Code / Superpowers
 .superpowers/
 .claude/
-CLAUDE.md
 .worktrees/
-scripts/.venv/
+CLAUDE.md
+
+# Python
 __pycache__/
 *.pyc
+scripts/.venv/
+scripts/.pytest_cache/
+
+# 빌드 캐시
+blog/.post_cache.json

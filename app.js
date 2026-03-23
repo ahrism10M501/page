@@ -1,3 +1,11 @@
+// Strip YAML frontmatter (---...---) from markdown text before rendering
+function stripFrontmatter(md) {
+  if (!md.startsWith('---')) return md;
+  const end = md.indexOf('\n---', 3);
+  if (end === -1) return md;
+  return md.slice(end + 4).replace(/^\n/, '');
+}
+
 // Fetch posts.json from a relative path and return parsed array
 async function fetchPosts(jsonPath) {
   try {
@@ -39,6 +47,28 @@ function getSlugFromURL() {
   const path = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
   const parts = path.split('/');
   return parts[parts.length - 1];
+}
+
+// Render projects from projects.json into a horizontal scroll container
+// Each project: { title, description, tags, link }
+function renderProjectCards(projects, container) {
+  container.innerHTML = '';
+  container.className = 'project-scroll';
+  projects.forEach(project => {
+    const card = document.createElement('a');
+    card.href = project.link || '#';
+    card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+    card.className = 'project-card';
+    card.innerHTML = `
+      <h3>${project.title}</h3>
+      <p>${project.description}</p>
+      <div class="card-tags">
+        ${(project.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
 // Fetch graph.json and return parsed object { nodes, edges }

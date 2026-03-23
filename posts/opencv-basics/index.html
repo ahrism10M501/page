@@ -66,7 +66,7 @@
       const res = await fetch('./content.md');
       if (res.ok) {
         const md = await res.text();
-        document.getElementById('post-content').innerHTML = marked.parse(md);
+        document.getElementById('post-content').innerHTML = marked.parse(stripFrontmatter(md));
         document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
       } else {
         document.getElementById('post-content').innerHTML = '<p>글을 불러올 수 없습니다.</p>';

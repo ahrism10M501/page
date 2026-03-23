@@ -1,3 +1,10 @@
+---
+title: "Python 성능 최적화 실전 가이드"
+date: 2026-03-21
+tags: [python, optimization, numpy]
+summary: "NumPy 벡터화, Numba JIT, 멀티프로세싱으로 Python 속도 끌어올리기"
+---
+
 # Python 성능 최적화 실전 가이드
 
 Python은 느리다는 편견이 있지만, 올바른 도구를 쓰면 충분히 빠른 코드를 작성할 수 있습니다.

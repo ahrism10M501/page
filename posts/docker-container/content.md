@@ -1,3 +1,10 @@
+---
+title: "Docker로 재현 가능한 개발 환경 만들기"
+date: 2026-03-22
+tags: [devops, docker, linux]
+summary: "Dockerfile, Compose, 레이어 캐시 전략까지 실전 Docker"
+---
+
 # Docker로 재현 가능한 개발 환경 만들기
 
 "내 컴퓨터에선 되는데"를 없애는 가장 확실한 방법은 Docker입니다.
