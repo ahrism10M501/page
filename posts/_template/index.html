@@ -26,12 +26,25 @@
       <div class="post-meta" id="post-meta"></div>
     </div>
     <article id="post-content" class="post-content"></article>
+    <!-- Related posts subgraph -->
+    <section id="related-graph-section" style="display:none">
+      <div class="section-label">관련 글 탐색</div>
+      <div class="depth-control">
+        <label for="depth-slider">깊이:</label>
+        <input type="range" id="depth-slider" min="2" max="5" value="2">
+        <span class="depth-value" id="depth-value">2</span>
+      </div>
+      <div class="graph-container subgraph" id="subgraph-container"></div>
+    </section>
   </main>
   <footer class="container">
     <small>&copy; 2024 ahrism</small>
   </footer>
 
   <script src="../../app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+  <script src="../../graph.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
   <script>
@@ -56,6 +69,38 @@
         document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
       } else {
         document.getElementById('post-content').innerHTML = '<p>글을 불러올 수 없습니다.</p>';
+      }
+
+      // --- 서브그래프 ---
+      const graphData = await fetchGraph('../../blog/graph.json');
+      if (graphData && slug) {
+        const section = document.getElementById('related-graph-section');
+        const container = document.getElementById('subgraph-container');
+        const slider = document.getElementById('depth-slider');
+        const depthValue = document.getElementById('depth-value');
+
+        let subCy = renderSubgraph(container, graphData, slug, 2, {
+          onNodeClick: function (id) {
+            window.location.href = '../' + id + '/';
+          },
+        });
+
+        if (subCy) {
+          section.style.display = '';
+          slider.addEventListener('input', function () {
+            depthValue.textContent = slider.value;
+            if (subCy) subCy.destroy();
+            container.innerHTML = '';
+            subCy = renderSubgraph(container, graphData, slug, parseInt(slider.value), {
+              onNodeClick: function (id) {
+                window.location.href = '../' + id + '/';
+              },
+            });
+            if (!subCy) {
+              container.innerHTML = '<div class="graph-empty">이 깊이에서 관련 글이 없습니다</div>';
+            }
+          });
+        }
       }
     })();
   </script>
