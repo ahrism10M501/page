@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,17 +20,160 @@
   </header>
   <main class="container">
     <h1>Blog</h1>
-    <div id="posts-container"></div>
+
+    <!-- Search bar -->
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="검색...">
+      <label class="toggle-label">
+        <input type="checkbox" id="tfidf-toggle">
+        키워드 가중
+      </label>
+    </div>
+
+    <!-- Tag filters -->
+    <div class="tag-filters" id="tag-filters"></div>
+
+    <!-- View toggle -->
+    <div class="view-toggle">
+      <button id="btn-graph" class="active">그래프</button>
+      <button id="btn-list">리스트</button>
+    </div>
+
+    <!-- Graph view -->
+    <div id="graph-view">
+      <div class="graph-container" id="graph-container"></div>
+    </div>
+
+    <!-- List view (hidden by default) -->
+    <div id="list-view" style="display:none">
+      <div id="posts-container"></div>
+    </div>
   </main>
   <footer class="container">
     <small>&copy; 2024 ahrism</small>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
   <script src="../app.js"></script>
+  <script src="../graph.js"></script>
   <script>
-    fetchPosts('./posts.json').then(posts => {
-      const container = document.getElementById('posts-container');
-      renderPostList(posts, container, '../posts/');
-    });
+    (async () => {
+      // --- 데이터 로드 ---
+      const graphData = await fetchGraph('./graph.json');
+      const posts = await fetchPosts('./posts.json');
+      const nodes = graphData ? graphData.nodes : posts.map(p => ({
+        id: p.slug, title: p.title, date: p.date, tags: p.tags, summary: p.summary, tfidf: {}
+      }));
+      const hasGraph = graphData && graphData.nodes.length > 1;
+
+      // --- 태그 필터 렌더링 ---
+      const allTags = [...new Set(nodes.flatMap(n => n.tags || []))].sort();
+      const tagContainer = document.getElementById('tag-filters');
+      allTags.forEach(tag => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-filter';
+        chip.textContent = tag;
+        chip.addEventListener('click', () => {
+          chip.classList.toggle('active');
+          applyFilters();
+        });
+        tagContainer.appendChild(chip);
+      });
+
+      // --- 뷰 토글 ---
+      const btnGraph = document.getElementById('btn-graph');
+      const btnList = document.getElementById('btn-list');
+      const graphView = document.getElementById('graph-view');
+      const listView = document.getElementById('list-view');
+      let currentView = hasGraph ? 'graph' : 'list';
+      let cy = null;
+
+      function setView(view) {
+        currentView = view;
+        if (view === 'graph') {
+          graphView.style.display = '';
+          listView.style.display = 'none';
+          btnGraph.classList.add('active');
+          btnList.classList.remove('active');
+          if (!cy && hasGraph) initMainGraph();
+        } else {
+          graphView.style.display = 'none';
+          listView.style.display = '';
+          btnList.classList.add('active');
+          btnGraph.classList.remove('active');
+        }
+        applyFilters();
+      }
+
+      btnGraph.addEventListener('click', () => setView('graph'));
+      btnList.addEventListener('click', () => setView('list'));
+
+      // 그래프 데이터가 없거나 노드 0~1개면 리스트로 폴백
+      if (!hasGraph) {
+        btnGraph.disabled = true;
+        btnGraph.style.opacity = '0.3';
+        document.getElementById('graph-container').innerHTML =
+          '<div class="graph-empty">포스트가 더 추가되면 그래프가 표시됩니다</div>';
+      }
+
+      // --- 그래프 초기화 ---
+      function initMainGraph() {
+        cy = initGraph(document.getElementById('graph-container'), graphData, {
+          onNodeClick: function (slug) {
+            window.location.href = '../posts/' + slug + '/';
+          },
+        });
+      }
+
+      // --- 검색 + 필터 적용 ---
+      let debounceTimer;
+      const searchInput = document.getElementById('search-input');
+      const tfidfToggle = document.getElementById('tfidf-toggle');
+
+      function applyFilters() {
+        const query = searchInput.value;
+        const mode = tfidfToggle.checked ? 'tfidf' : 'text';
+        const activeTags = [...document.querySelectorAll('.tag-filter.active')]
+          .map(el => el.textContent);
+
+        // 검색 결과
+        let matchedIds = searchPosts(nodes, query, mode);
+        // 태그 필터 교차
+        if (activeTags.length > 0) {
+          const tagMatched = new Set(filterByTags(nodes, activeTags));
+          matchedIds = matchedIds.filter(id => tagMatched.has(id));
+        }
+
+        // 그래프 뷰 업데이트
+        if (currentView === 'graph' && cy) {
+          if (!query && activeTags.length === 0) {
+            resetHighlight(cy);
+          } else {
+            highlightNodes(cy, matchedIds);
+          }
+        }
+
+        // 리스트 뷰 업데이트
+        if (currentView === 'list') {
+          const matchedSet = new Set(matchedIds);
+          const filtered = posts.filter(p => matchedSet.has(p.slug));
+          renderPostList(filtered, document.getElementById('posts-container'), '../posts/');
+        }
+      }
+
+      searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(applyFilters, 300);
+      });
+      tfidfToggle.addEventListener('change', applyFilters);
+
+      // --- 초기 렌더 ---
+      setView(currentView);
+      if (currentView === 'list') {
+        renderPostList(posts, document.getElementById('posts-container'), '../posts/');
+      }
+    })();
   </script>
 </body>
 </html>
