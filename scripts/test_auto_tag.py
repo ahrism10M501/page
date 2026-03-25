@@ -114,3 +114,25 @@ def test_generate_new_tags_dedup():
     existing_cache = {"python": np.array([0.1, 0.2])}
     result = generate_new_tags(keywords, existing_cache, max_new=3)
     assert "python" not in result
+
+def test_assign_tags_with_existing():
+    """기존 태그가 있으면 추천으로 채움."""
+    from auto_tag import assign_tags
+    import numpy as np
+
+    post_emb = np.array([1.0, 0.0])
+    tag_cache = {"deep-learning": np.array([0.9, 0.1])}
+
+    result = assign_tags(post_emb, tag_cache, tfidf_keywords=[], min_tags=1)
+    assert "deep-learning" in result
+
+def test_assign_tags_fallback_to_generate():
+    """추천이 부족하면 TF-IDF에서 새 태그 생성."""
+    from auto_tag import assign_tags
+    import numpy as np
+
+    post_emb = np.array([1.0, 0.0])
+    tag_cache = {"docker": np.array([0.0, 1.0])}  # 유사도 낮음
+
+    result = assign_tags(post_emb, tag_cache, tfidf_keywords=["pytorch", "신경망"], min_tags=2)
+    assert len(result) >= 2

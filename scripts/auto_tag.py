@@ -129,3 +129,52 @@ def generate_new_tags(
         if len(candidates) >= max_new:
             break
     return candidates
+
+
+def assign_tags(
+    post_emb: np.ndarray,
+    tag_cache: dict[str, np.ndarray],
+    tfidf_keywords: list[str],
+    threshold: float = MATCH_THRESHOLD,
+    max_tags: int = MAX_TAGS,
+    min_tags: int = MIN_TAGS,
+) -> list[str]:
+    """포스트에 태그 할당: 추천 우선, 부족하면 생성."""
+    recommended = recommend_tags(post_emb, tag_cache, threshold, max_tags)
+    tags = [t for t, _ in recommended]
+
+    if len(tags) < min_tags:
+        new_tags = generate_new_tags(tfidf_keywords, tag_cache, max_new=min_tags - len(tags))
+        tags.extend(new_tags)
+
+    return tags[:max_tags]
+
+
+def get_post_embeddings(posts: list[dict]) -> dict[str, np.ndarray]:
+    """build_graph.py의 .post_cache.json에서 포스트 임베딩 로드.
+
+    주의: update_graph()가 이미 실행되어 캐시가 최신 상태여야 한다.
+    캐시에 없는 포스트만 스킵한다.
+    """
+    from build_graph import load_cache
+
+    cache = load_cache()
+    result = {}
+    for p in posts:
+        if p["slug"] in cache:
+            result[p["slug"]] = np.array(cache[p["slug"]]["embedding"])
+    return result
+
+
+def init_tags(posts: list[dict]) -> tuple[list[str], dict[str, np.ndarray]]:
+    """기존 포스트에서 태그 목록 + 태그 임베딩 초기화."""
+    post_embs = get_post_embeddings(posts)
+    tag_embs = compute_tag_embeddings(posts, post_embs)
+
+    tags = sorted(tag_embs.keys())
+    save_tags(tags)
+    save_tag_cache({t: e.tolist() for t, e in tag_embs.items()})
+
+    print(f"tags.json: {len(tags)}개 태그")
+    print(f".tag_cache.json: 임베딩 저장 완료")
+    return tags, tag_embs
