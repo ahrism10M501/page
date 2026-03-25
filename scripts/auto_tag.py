@@ -66,3 +66,24 @@ def save_tag_cache(cache: dict[str, list[float]], path: Path = TAG_CACHE_PATH):
         json.dumps(cache, ensure_ascii=False),
         encoding="utf-8",
     )
+
+
+def compute_tag_embeddings(
+    posts: list[dict],
+    post_embeddings: dict[str, np.ndarray],
+) -> dict[str, np.ndarray]:
+    """각 태그의 임베딩을 해당 태그를 가진 포스트 임베딩의 centroid로 계산."""
+    tag_vectors: dict[str, list[np.ndarray]] = {}
+    for post in posts:
+        slug = post["slug"]
+        if slug not in post_embeddings:
+            continue
+        emb = post_embeddings[slug]
+        for tag in post.get("tags", []):
+            canonical = normalize_tag(tag)
+            tag_vectors.setdefault(canonical, []).append(emb)
+
+    return {
+        tag: np.mean(vectors, axis=0)
+        for tag, vectors in tag_vectors.items()
+    }

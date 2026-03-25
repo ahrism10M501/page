@@ -23,3 +23,27 @@ def test_save_load_tag_cache(tmp_path):
     save_tag_cache(data, path)
     loaded = load_tag_cache(path)
     assert list(loaded.keys()) == ["python", "docker"]
+
+def test_compute_tag_embeddings():
+    """태그 임베딩 = 해당 태그를 가진 포스트 임베딩의 centroid."""
+    from auto_tag import compute_tag_embeddings
+    import numpy as np
+
+    post_embeddings = {
+        "post-a": np.array([1.0, 0.0, 0.0]),
+        "post-b": np.array([0.0, 1.0, 0.0]),
+        "post-c": np.array([1.0, 1.0, 0.0]),
+    }
+    posts = [
+        {"slug": "post-a", "tags": ["python", "ml"]},
+        {"slug": "post-b", "tags": ["python", "docker"]},
+        {"slug": "post-c", "tags": ["ml"]},
+    ]
+    result = compute_tag_embeddings(posts, post_embeddings)
+
+    # python = mean(post-a, post-b) = [0.5, 0.5, 0.0]
+    np.testing.assert_array_almost_equal(result["python"], [0.5, 0.5, 0.0])
+    # ml = mean(post-a, post-c) = [1.0, 0.5, 0.0]
+    np.testing.assert_array_almost_equal(result["ml"], [1.0, 0.5, 0.0])
+    # docker = mean(post-b) = [0.0, 1.0, 0.0]
+    np.testing.assert_array_almost_equal(result["docker"], [0.0, 1.0, 0.0])
