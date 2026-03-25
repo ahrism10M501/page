@@ -47,3 +47,26 @@ def test_compute_tag_embeddings():
     np.testing.assert_array_almost_equal(result["ml"], [1.0, 0.5, 0.0])
     # docker = mean(post-b) = [0.0, 1.0, 0.0]
     np.testing.assert_array_almost_equal(result["docker"], [0.0, 1.0, 0.0])
+
+def test_recommend_tags():
+    """포스트 임베딩과 태그 임베딩의 cosine similarity로 추천."""
+    from auto_tag import recommend_tags
+    import numpy as np
+
+    post_emb = np.array([1.0, 0.0, 0.0])
+    tag_cache = {
+        "ml": np.array([0.9, 0.1, 0.0]),         # 높은 유사도
+        "docker": np.array([0.0, 0.0, 1.0]),      # 낮은 유사도
+        "python": np.array([0.7, 0.3, 0.0]),      # 중간 유사도
+    }
+    result = recommend_tags(post_emb, tag_cache, threshold=0.4, max_tags=5)
+    tags = [t for t, _ in result]
+    assert "ml" in tags
+    assert "python" in tags
+    assert "docker" not in tags  # 유사도 낮아서 제외
+
+def test_recommend_tags_empty():
+    from auto_tag import recommend_tags
+    import numpy as np
+    result = recommend_tags(np.array([1.0, 0.0]), {}, threshold=0.4, max_tags=5)
+    assert result == []

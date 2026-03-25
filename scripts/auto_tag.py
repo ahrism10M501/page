@@ -25,6 +25,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 ROOT = Path(__file__).resolve().parent.parent
 TAGS_PATH = ROOT / "blog" / "tags.json"
@@ -87,3 +88,24 @@ def compute_tag_embeddings(
         tag: np.mean(vectors, axis=0)
         for tag, vectors in tag_vectors.items()
     }
+
+
+def recommend_tags(
+    post_emb: np.ndarray,
+    tag_cache: dict[str, np.ndarray],
+    threshold: float = MATCH_THRESHOLD,
+    max_tags: int = MAX_TAGS,
+) -> list[tuple[str, float]]:
+    """포스트 임베딩과 태그 임베딩의 cosine similarity로 태그 추천.
+
+    Returns: [(tag, similarity), ...] 유사도 내림차순
+    """
+    if not tag_cache:
+        return []
+
+    tag_names = list(tag_cache.keys())
+    tag_embs = np.array([tag_cache[t] for t in tag_names])
+    sims = cosine_similarity([post_emb], tag_embs)[0]
+
+    ranked = sorted(zip(tag_names, sims), key=lambda x: x[1], reverse=True)
+    return [(t, float(s)) for t, s in ranked if s >= threshold][:max_tags]
