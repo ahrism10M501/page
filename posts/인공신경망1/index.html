@@ -9,15 +9,22 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github-dark.min.css">
 </head>
 <body>
-  <header class="container">
-    <nav>
-      <ul><li><strong><a href="../../">ahrism</a></strong></li></ul>
-      <ul>
-        <li><a href="../../#about">About</a></li>
-        <li><a href="../../blog/" class="active">Blog</a></li>
-      </ul>
-    </nav>
-  </header>
+  <aside id="sidebar">
+    <div class="sidebar-icons">
+      <button class="sidebar-btn" data-label="Home" data-href="../../">⌂</button>
+      <button class="sidebar-btn" data-panel="about" data-label="About">◉</button>
+      <button class="sidebar-btn active" data-label="Blog" data-href="../../blog/">≡</button>
+      <button class="sidebar-btn" data-panel="github" data-label="GitHub">⬡</button>
+    </div>
+    <div id="panel-about" class="sidebar-panel">
+      <div class="panel-header">About</div>
+      <p class="panel-placeholder">준비 중</p>
+    </div>
+    <div id="panel-github" class="sidebar-panel">
+      <div class="panel-header">GitHub</div>
+      <p class="panel-placeholder">준비 중</p>
+    </div>
+  </aside>
   <main class="container">
     <a href="../../blog/" style="font-size:0.85rem;color:#444">← Blog</a>
     <div id="post-header" class="editorial-header">
@@ -49,5 +56,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
   <script src="../../post.js"></script>
+  <script src="../../sidebar.js"></script>
 </body>
 </html>
