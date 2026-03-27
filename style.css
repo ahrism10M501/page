@@ -101,6 +101,9 @@
   flex-shrink: 0;
 }
 
+/* Post meta (date + tags container) */
+.post-meta { font-size: 0.8rem; }
+
 /* Post content area */
 .post-content img {
   max-width: 100%;
