@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub — Ahrism</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <aside id="sidebar">
+    <div class="sidebar-icons">
+      <button class="sidebar-btn" data-label="Home" data-href="../">⌂</button>
+      <button class="sidebar-btn" data-panel="about" data-label="About">◉</button>
+      <button class="sidebar-btn" data-label="Blog" data-href="../blog/">≡</button>
+      <button class="sidebar-btn active" data-label="GitHub" data-href="./">⬡</button>
+    </div>
+    <div id="panel-about" class="sidebar-panel">
+      <div class="panel-header">About</div>
+      <p class="panel-placeholder">준비 중</p>
+    </div>
+  </aside>
+  <main class="container">
+    <div class="editorial-header">
+      <span class="editorial-label">GitHub</span>
+      <h1>Repositories</h1>
+    </div>
+    <div id="github-sources"></div>
+  </main>
+  <footer class="container">
+    <small>&copy; 2024 ahrism</small>
+  </footer>
+
+  <script>
+(function () {
+  var CACHE_TTL = 5 * 60 * 1000; // 5분
+
+  var LANG_COLORS = {
+    Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
+    'C++': '#f34b7d', C: '#555555', Java: '#b07219', HTML: '#e34c26',
+    CSS: '#563d7c', Rust: '#dea584', Go: '#00ADD8', Shell: '#89e051',
+    'Jupyter Notebook': '#DA5B0B', Kotlin: '#A97BFF', Swift: '#F05138', Ruby: '#701516'
+  };
+
+  function relativeDate(dateStr) {
+    var now = Date.now();
+    var then = new Date(dateStr).getTime();
+    var diff = now - then;
+    var sec = Math.floor(diff / 1000);
+    if (sec < 60) return '방금';
+    var min = Math.floor(sec / 60);
+    if (min < 60) return min + '분 전';
+    var hr = Math.floor(min / 60);
+    if (hr < 24) return hr + '시간 전';
+    var day = Math.floor(hr / 24);
+    if (day < 30) return day + '일 전';
+    var month = Math.floor(day / 30);
+    if (month < 12) return month + '개월 전';
+    return Math.floor(month / 12) + '년 전';
+  }
+
+  function getCached(key) {
+    try {
+      var raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (Date.now() - obj.ts > CACHE_TTL) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      return obj.data;
+    } catch (e) { return null; }
+  }
+
+  function setCache(key, data) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
+    } catch (e) { /* quota exceeded — ignore */ }
+  }
+
+  function fetchRepos(source) {
+    var cacheKey = 'gh_repos_' + source.name;
+    var cached = getCached(cacheKey);
+    if (cached) return Promise.resolve(cached);
+
+    var base = source.type === 'org'
+      ? 'https://api.github.com/orgs/'
+      : 'https://api.github.com/users/';
+    var url = base + encodeURIComponent(source.name) + '/repos?sort=updated&per_page=30';
+
+    return fetch(url)
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+      .then(function (repos) {
+        setCache(cacheKey, repos);
+        return repos;
+      });
+  }
+
+  function renderRepoCard(repo) {
+    var card = document.createElement('a');
+    card.className = 'gh-repo-card';
+    card.href = repo.html_url;
+    card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+
+    var name = document.createElement('div');
+    name.className = 'gh-repo-name';
+    name.textContent = repo.name;
+    card.appendChild(name);
+
+    if (repo.description) {
+      var desc = document.createElement('div');
+      desc.className = 'gh-repo-desc';
+      desc.textContent = repo.description;
+      card.appendChild(desc);
+    }
+
+    var meta = document.createElement('div');
+    meta.className = 'gh-repo-meta';
+
+    if (repo.language) {
+      var lang = document.createElement('span');
+      lang.className = 'gh-repo-lang';
+      var dot = document.createElement('span');
+      dot.className = 'gh-lang-dot';
+      dot.style.background = LANG_COLORS[repo.language] || '#888';
+      lang.appendChild(dot);
+      lang.appendChild(document.createTextNode(repo.language));
+      meta.appendChild(lang);
+    }
+
+    if (repo.stargazers_count > 0) {
+      var stars = document.createElement('span');
+      stars.className = 'gh-repo-stars';
+      stars.textContent = '\u2605 ' + repo.stargazers_count;
+      meta.appendChild(stars);
+    }
+
+    if (repo.updated_at) {
+      var date = document.createElement('span');
+      date.className = 'gh-repo-date';
+      date.textContent = relativeDate(repo.updated_at);
+      meta.appendChild(date);
+    }
+
+    card.appendChild(meta);
+    return card;
+  }
+
+  function renderSkeletons(container) {
+    var scroll = document.createElement('div');
+    scroll.className = 'gh-repo-scroll';
+    for (var i = 0; i < 4; i++) {
+      var skel = document.createElement('div');
+      skel.className = 'gh-repo-card gh-skeleton-card';
+      skel.innerHTML =
+        '<div class="gh-skeleton" style="height:1rem;width:60%;margin-bottom:0.5rem"></div>' +
+        '<div class="gh-skeleton" style="height:0.8rem;width:90%;margin-bottom:0.3rem"></div>' +
+        '<div class="gh-skeleton" style="height:0.8rem;width:40%"></div>';
+      scroll.appendChild(skel);
+    }
+    container.appendChild(scroll);
+    return scroll;
+  }
+
+  function renderSection(source, container) {
+    var section = document.createElement('div');
+    section.className = 'gh-source-section';
+    container.appendChild(section);
+
+    var skeletonScroll = renderSkeletons(section);
+
+    fetchRepos(source)
+      .then(function (repos) {
+        section.removeChild(skeletonScroll);
+        repos = repos.filter(function (r) { return !r.fork; }).slice(0, 9);
+        if (repos.length === 0) {
+          var empty = document.createElement('p');
+          empty.className = 'gh-empty';
+          empty.textContent = '공개 리포지토리가 없습니다';
+          section.appendChild(empty);
+          return;
+        }
+        var scroll = document.createElement('div');
+        scroll.className = 'gh-repo-scroll';
+        repos.forEach(function (repo) {
+          scroll.appendChild(renderRepoCard(repo));
+        });
+        section.appendChild(scroll);
+      })
+      .catch(function (err) {
+        section.removeChild(skeletonScroll);
+        var errEl = document.createElement('p');
+        errEl.className = 'gh-error';
+        errEl.textContent = 'API 요청 실패 — 잠시 후 다시 시도해주세요 (' + err.message + ')';
+        section.appendChild(errEl);
+      });
+  }
+
+  // Init
+  fetch('../github-sources.json')
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    })
+    .then(function (sources) {
+      var container = document.getElementById('github-sources');
+      sources.forEach(function (source) {
+        renderSection(source, container);
+      });
+    })
+    .catch(function (err) {
+      document.getElementById('github-sources').innerHTML =
+        '<p class="gh-error">소스 설정을 불러올 수 없습니다 (' + err.message + ')</p>';
+    });
+})();
+  </script>
+  <script src="../sidebar.js"></script>
+</body>
+</html>

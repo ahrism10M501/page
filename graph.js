@@ -130,6 +130,7 @@ function initGraph(container, graphData, options = {}) {
     },
     minZoom: 0.3,
     maxZoom: 3,
+    userZoomingEnabled: options.userZoomingEnabled !== false,
   });
 
   // 노드 클릭 이벤트
@@ -141,6 +142,7 @@ function initGraph(container, graphData, options = {}) {
 
   cy.on('layoutstop', function () {
     applyDepthEffect(cy);
+    cy.fit(undefined, 40);
   });
 
   const threshold = options.hoverWeightThreshold !== undefined ? options.hoverWeightThreshold : 0.4;

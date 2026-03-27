@@ -4,5 +4,11 @@
     "description": "소리의 특징과 위치 정보를 결합한 맞춤형 의성어 렌더링으로 청각 장애인에게 풍부한 시각적 청각 경험을 제공하는 혁신적 자막 플랫폼.",
     "tags": ["Python", "PyTorch", "YOLO", "DL"],
     "link": "https://github.com/ahrism10M501/onomatopoeia_captioning"
+  },
+  {
+    "title": "EoN 동아리",
+    "description": "경기대학교 전자공학과의 EoN 동아리의 26년 회장을 맡으며 20명의 인원을 성공적으로 이끌고자 합니다",
+    "tags": ["Python", "DL", "대학교", "동아리", "반도체", "설계"],
+    "link": "https://github.com/Kyonggi-EoN"
   }
 ]

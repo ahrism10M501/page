@@ -327,31 +327,34 @@ body {
   position: fixed;
   left: 0; top: 0;
   width: 48px; height: 100vh;
-  background: #111111;
+  background: #0e0e0e;
   border-right: 1px solid #1e1e1e;
   z-index: 100;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
 }
 .sidebar-icons {
   display: flex;
   flex-direction: column;
 }
 .sidebar-btn {
-  width: 48px; height: 48px;
-  background: transparent;
-  border: none;
-  border-left: 2px solid transparent;
-  color: #555;
-  font-size: 1.2rem;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.15s, border-color 0.15s;
+  all: unset;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 48px; height: 48px;
+  box-sizing: border-box;
+  border-left: 2px solid transparent;
+  color: #777;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s, border-color 0.15s;
 }
-.sidebar-btn:hover { color: #cccccc; }
+.sidebar-btn:hover { color: #ccc; }
 .sidebar-btn.active {
   color: #dc00c9;
   border-left-color: #dc00c9;
@@ -378,16 +381,15 @@ body {
 /* Sidebar panel (overlay) */
 .sidebar-panel {
   position: fixed;
-  left: 48px; top: 0;
+  left: -220px; top: 0;
   width: 220px; height: 100vh;
   background: #111111;
   border-right: 1px solid #1e1e1e;
   z-index: 99;
-  transform: translateX(-100%);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
 }
-.sidebar-panel.open { transform: translateX(0); }
+.sidebar-panel.open { left: 48px; }
 .panel-header {
   padding: 1rem 1rem 0.5rem;
   font-size: 0.7rem;
@@ -401,6 +403,97 @@ body {
   padding: 0.5rem 1rem;
   color: #555;
   font-size: 0.85rem;
+}
+
+/* ── GitHub page ─────────────────────────────────────── */
+.gh-source-section {
+  margin-bottom: 2.5rem;
+}
+.gh-source-label {
+  font-size: 0.7rem;
+  color: #dc00c9;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1e1e1e;
+  margin-bottom: 0;
+}
+.gh-repo-scroll {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+.gh-repo-card {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 8px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.gh-repo-card:hover { border-color: #4a62ff; }
+.gh-repo-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gh-repo-desc {
+  font-size: 0.8rem;
+  color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  flex: 1;
+}
+.gh-repo-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: auto;
+}
+.gh-repo-lang {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+.gh-lang-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.gh-repo-stars { white-space: nowrap; }
+.gh-repo-date { margin-left: auto; white-space: nowrap; }
+.gh-empty, .gh-error {
+  color: #555;
+  font-size: 0.85rem;
+  padding: 1rem 0;
+}
+/* Skeleton loading */
+.gh-skeleton-card { pointer-events: none; }
+.gh-skeleton {
+  background: #1e1e1e;
+  border-radius: 4px;
+}
+@keyframes gh-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.gh-skeleton-card .gh-skeleton {
+  animation: gh-pulse 1.5s ease-in-out infinite;
 }
 
 /* ── Index graph upward expand ───────────────────────── */
