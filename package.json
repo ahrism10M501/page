@@ -1,0 +1,27 @@
+{
+  "name": "ahrism-pages",
+  "version": "1.0.0",
+  "description": "<div align=\"center\"> <img src=\"https://capsule-render.vercel.app/api?type=waving&color=0:ff0000,50:dc00c9,100:0082ff&height=200&section=header&text=ahrism&fontSize=48&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Building%20Practical%20AI%20Systems%20%C2%B7%20Physical%20Agents&descSize=16&descAlignY=58&descAlign=50\" width=\"100%\" /> </div>",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahrism10M501/ahrism-pages.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ahrism10M501/ahrism-pages/issues"
+  },
+  "homepage": "https://github.com/ahrism10M501/ahrism-pages#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

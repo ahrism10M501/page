@@ -33,7 +33,7 @@
 
   <script>
 (function () {
-  var CACHE_TTL = 5 * 60 * 1000; // 5분
+  var CACHE_TTL = 5 * 60 * 1000;
 
   var LANG_COLORS = {
     Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
@@ -75,7 +75,7 @@
   function setCache(key, data) {
     try {
       sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data }));
-    } catch (e) { /* quota exceeded — ignore */ }
+    } catch (e) {}
   }
 
   function fetchRepos(source) {
@@ -86,7 +86,7 @@
     var base = source.type === 'org'
       ? 'https://api.github.com/orgs/'
       : 'https://api.github.com/users/';
-    var url = base + encodeURIComponent(source.name) + '/repos?sort=updated&per_page=30';
+    var url = base + encodeURIComponent(source.name) + '/repos?sort=updated&per_page=100';
 
     return fetch(url)
       .then(function (r) {
@@ -150,33 +150,20 @@
     return card;
   }
 
-  function renderSkeletons(container) {
-    var scroll = document.createElement('div');
-    scroll.className = 'gh-repo-scroll';
-    for (var i = 0; i < 4; i++) {
-      var skel = document.createElement('div');
-      skel.className = 'gh-repo-card gh-skeleton-card';
-      skel.innerHTML =
-        '<div class="gh-skeleton" style="height:1rem;width:60%;margin-bottom:0.5rem"></div>' +
-        '<div class="gh-skeleton" style="height:0.8rem;width:90%;margin-bottom:0.3rem"></div>' +
-        '<div class="gh-skeleton" style="height:0.8rem;width:40%"></div>';
-      scroll.appendChild(skel);
-    }
-    container.appendChild(scroll);
-    return scroll;
-  }
-
   function renderSection(source, container) {
     var section = document.createElement('div');
     section.className = 'gh-source-section';
-    container.appendChild(section);
 
-    var skeletonScroll = renderSkeletons(section);
+    var label = document.createElement('h2');
+    label.className = 'gh-source-label';
+    label.textContent = source.label || source.name;
+    section.appendChild(label);
+
+    container.appendChild(section);
 
     fetchRepos(source)
       .then(function (repos) {
-        section.removeChild(skeletonScroll);
-        repos = repos.filter(function (r) { return !r.fork; }).slice(0, 9);
+        repos = repos.filter(function (r) { return !r.fork; });
         if (repos.length === 0) {
           var empty = document.createElement('p');
           empty.className = 'gh-empty';
@@ -186,13 +173,13 @@
         }
         var scroll = document.createElement('div');
         scroll.className = 'gh-repo-scroll';
+        scroll.style.setProperty('--gh-rows', source.rows || 1);
         repos.forEach(function (repo) {
           scroll.appendChild(renderRepoCard(repo));
         });
         section.appendChild(scroll);
       })
       .catch(function (err) {
-        section.removeChild(skeletonScroll);
         var errEl = document.createElement('p');
         errEl.className = 'gh-error';
         errEl.textContent = 'API 요청 실패 — 잠시 후 다시 시도해주세요 (' + err.message + ')';

@@ -29,4 +29,24 @@
       });
     }
   });
+
+  // 모바일 햄버거 토글
+  var toggleBtn = document.getElementById('sidebar-toggle');
+  var sidebar = document.getElementById('sidebar');
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      sidebar.classList.toggle('open');
+      toggleBtn.classList.toggle('active');
+    });
+    // 사이드바 외부 탭 시 닫기
+    document.addEventListener('click', function (e) {
+      if (sidebar.classList.contains('open') &&
+          !e.target.closest('#sidebar') &&
+          e.target !== toggleBtn) {
+        sidebar.classList.remove('open');
+        toggleBtn.classList.remove('active');
+      }
+    });
+  }
 })();

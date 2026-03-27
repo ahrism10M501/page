@@ -1,3 +1,4 @@
 [
-  { "name": "ahrism10m501", "type": "user", "label": "ahrism10m501" }
+  { "name": "ahrism10m501", "type": "user", "label": "ahrism10m501", "rows": 3 },
+  { "name": "Kyonggi-EoN", "type": "org", "label": "Kyonggi-EoN", "rows": 1 }
 ]
