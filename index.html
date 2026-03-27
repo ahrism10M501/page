@@ -97,5 +97,87 @@
       }
     })();
   </script>
+  <script>
+(function () {
+  const gc = document.getElementById('graph-container');
+  if (!gc) return;
+
+  const SNAP_THRESHOLD = 80; // px: 이 이상 당기면 확장
+  const DEFAULT_VH = window.innerWidth <= 640 ? 40 : 45;
+  const EXPANDED_VH = 80;
+  const EASE = '0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+  let expanded = false;
+  let startY = 0;
+  let dragActive = false;
+
+  function baseH() { return DEFAULT_VH / 100 * window.innerHeight; }
+
+  function setHPx(px) {
+    gc.style.transition = 'none';
+    gc.style.height = px + 'px';
+  }
+
+  function snapTo(vh) {
+    gc.style.transition = 'height ' + EASE;
+    gc.style.height = vh + 'vh';
+  }
+
+  function snapExpand() {
+    expanded = true;
+    snapTo(EXPANDED_VH);
+  }
+
+  function snapCollapse() {
+    expanded = false;
+    snapTo(DEFAULT_VH);
+  }
+
+  // ── Touch (mobile) ─────────────────────────────
+  document.addEventListener('touchstart', function (e) {
+    if (window.scrollY > 2) return;
+    startY = e.touches[0].clientY;
+    dragActive = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    if (!dragActive) return;
+    const delta = e.touches[0].clientY - startY; // 양수 = 손가락 아래로 = overscroll 위
+    if (delta <= 0) { dragActive = false; return; }
+    if (!expanded) {
+      setHPx(baseH() + delta * 0.4); // rubber band 감쇠
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function () {
+    if (!dragActive) return;
+    dragActive = false;
+    if (!expanded) {
+      const delta = gc.offsetHeight - baseH();
+      if (delta > SNAP_THRESHOLD) {
+        snapExpand();
+      } else {
+        snapCollapse();
+      }
+    }
+  }, { passive: true });
+
+  // ── Scroll (collapse when scrolling down) ──────
+  document.addEventListener('scroll', function () {
+    if (expanded && window.scrollY > 10) {
+      snapCollapse();
+    }
+  }, { passive: true });
+
+  // ── Wheel (desktop) ────────────────────────────
+  document.addEventListener('wheel', function (e) {
+    if (e.deltaY < 0 && window.scrollY < 2 && !expanded) {
+      snapExpand();
+    } else if (e.deltaY > 0 && window.scrollY < 2 && expanded) {
+      snapCollapse();
+    }
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
