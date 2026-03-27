@@ -1,3 +1,9 @@
+// Format YYYY-MM-DD → "Jan 15"
+function formatPostDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 // Strip YAML frontmatter (---...---) from markdown text before rendering
 function stripFrontmatter(md) {
   if (!md.startsWith('---')) return md;
@@ -26,15 +32,15 @@ function renderPostList(posts, container, postsBasePath) {
     const item = document.createElement('a');
     item.href = `${postsBasePath}${post.slug}/`;
     item.className = 'post-item';
-    item.style.textDecoration = 'none';
-    item.style.display = 'block';
     item.innerHTML = `
-      <h3>${post.title}</h3>
-      <div class="post-meta">
-        ${post.date}
+      <div class="post-item-row">
+        <h3>${post.title}</h3>
+        <span class="post-date-inline">${formatPostDate(post.date)}</span>
+      </div>
+      <div class="post-meta" style="margin-top:0.25rem">
         ${post.tags.map(t => `<span class="tag">${t}</span>`).join(' ')}
       </div>
-      ${post.summary ? `<p style="color:#777;font-size:0.85rem;margin-top:0.3rem">${post.summary}</p>` : ''}
+      ${post.summary ? `<p style="color:#666;font-size:0.85rem;margin-top:0.3rem;margin-bottom:0">${post.summary}</p>` : ''}
     `;
     container.appendChild(item);
   });
