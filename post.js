@@ -28,7 +28,7 @@
     document.title = `${post.title} — ahrism`;
     document.getElementById('post-title').textContent = post.title;
     document.getElementById('post-meta').innerHTML =
-      `<span class="editorial-label">${post.date}</span>` +
+      `<span class="label--slash">${post.date}</span>` +
       post.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
   }
 
