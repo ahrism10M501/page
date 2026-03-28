@@ -49,7 +49,7 @@ function initGraph(container, graphData, options = {}) {
           'height': 30,
           'border-width': 2,
           'border-color': '#4a62ff',
-          'transition-property': 'background-color, border-color, color, width, height',
+          'transition-property': 'background-color, border-color, color',
           'transition-duration': '300ms',
           'transition-timing-function': 'ease-in-out',
         },
@@ -283,17 +283,25 @@ function setupHoverHighlight(cy, threshold, defaultHighlightNode) {
 
   cy.on('mouseover', 'node', function (evt) {
     if (cy._searchHighlightActive) return;
+    // 호버 시 transition 일시 비활성화 (크기 변화 방지)
+    cy.style().selector('node').style('transition-duration', 0);
     applyNodeHighlight(cy, evt.target, threshold, 'hovered');
+    // 즉시 transition 복원
+    cy.style().selector('node').style('transition-duration', '300ms');
   });
 
   cy.on('mouseout', 'node', function () {
     if (cy._searchHighlightActive) return;
+    // mouseout 시 transition 일시 비활성화
+    cy.style().selector('node').style('transition-duration', 0);
     cy.batch(function () {
       cy.elements().removeClass('dimmed highlighted hovered');
       if (defaultHighlightNode) {
         defaultHighlightNode.addClass('root');
       }
     });
+    // 즉시 transition 복원
+    cy.style().selector('node').style('transition-duration', '300ms');
   });
 }
 

@@ -132,20 +132,31 @@
           if (!cy) return;
           var origSizes = {};
           var SCALE = 1.7;
+          var GROW_MS = 500;
           var HOLD_MS = 13000;
-          var INTERVAL_MS = 13500;
-          // applyDepthEffect가 layoutstop에서 실행 → 300ms CSS transition 완료 후 origSizes 캡처
+          var SHRINK_MS = 500;
+          var INTERVAL_MS = GROW_MS + HOLD_MS; // 13500ms — crossover: next batch grows as current shrinks
           cy.one('layoutstop', function () {
-            setTimeout(function () {
-              cy.nodes().forEach(function (node) {
-                origSizes[node.id()] = {
-                  w: parseFloat(node.style('width')),
-                  h: parseFloat(node.style('height'))
-                };
-              });
-              pulseRandom();
-            }, 350);
+            cy.nodes().forEach(function (node) {
+              origSizes[node.id()] = {
+                w: parseFloat(node.style('width')),
+                h: parseFloat(node.style('height'))
+              };
+            });
+            pulseRandom(); // 레이아웃 완료 직후 즉시 실행
           });
+
+          function animateSize(node, fromW, fromH, toW, toH, ms, onDone) {
+            var start = performance.now();
+            function tick(now) {
+              var t = Math.min((now - start) / ms, 1);
+              var e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+              node.style({ width: fromW + (toW - fromW) * e, height: fromH + (toH - fromH) * e });
+              if (t < 1) requestAnimationFrame(tick);
+              else if (onDone) onDone();
+            }
+            requestAnimationFrame(tick);
+          }
 
           function pulseRandom() {
             if (Object.keys(origSizes).length === 0) return;
@@ -155,11 +166,12 @@
             picks.forEach(function (node) {
               var orig = origSizes[node.id()];
               if (!orig) return;
-              // CSS transition(300ms ease-in-out)이 grow/shrink 처리
-              node.style({ width: orig.w * SCALE, height: orig.h * SCALE });
-              setTimeout(function () {
-                node.style({ width: orig.w, height: orig.h });
-              }, HOLD_MS);
+              var sw = orig.w * SCALE, sh = orig.h * SCALE;
+              animateSize(node, orig.w, orig.h, sw, sh, GROW_MS, function () {
+                setTimeout(function () {
+                  animateSize(node, sw, sh, orig.w, orig.h, SHRINK_MS);
+                }, HOLD_MS);
+              });
             });
           }
           setInterval(pulseRandom, INTERVAL_MS);

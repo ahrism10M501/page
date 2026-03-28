@@ -217,11 +217,11 @@ z2 = a1 @ W2 + b2; preds = sigmoid(z2)
 print("학습 결과:", np.round(preds.flatten(), 3), "→ 정답:", y.flatten().astype(int))
 
 # ── 4. 결정 경계 시각화 ──
-fig, ax = plt.subplots(figsize=(9, 9))
+fig, ax = plt.subplots(figsize=(8, 5)) 
 fig.patch.set_facecolor(BG_COLOR)
 
-xx, yy = np.meshgrid(np.linspace(-0.5, 1.5, 400),
-                     np.linspace(-0.5, 1.5, 400))
+xx, yy = np.meshgrid(np.linspace(-0.2, 1.2, 400),
+                     np.linspace(-0.2, 1.2, 400))
 grid = np.c_[xx.ravel(), yy.ravel()]
 
 # 학습된 MLP로 예측
@@ -229,39 +229,46 @@ g_a1 = sigmoid(grid @ W1 + b1)
 g_out = sigmoid(g_a1 @ W2 + b2).reshape(xx.shape)
 
 # 배경 확률 색칠
-ax.contourf(xx, yy, g_out, levels=50,
-            cmap='RdBu_r', alpha=0.4, zorder=1)
+ax.contourf(xx, yy, g_out, levels=50, cmap='RdBu_r', alpha=0.4, zorder=1)
 
 # 결정 경계선 (0.5 등고선)
-ax.contour(xx, yy, g_out, levels=[0.5],
-           colors=[C_MAGENTA], linewidths=3.5, zorder=3)
+ax.contour(xx, yy, g_out, levels=[0.5], colors=[C_MAGENTA], linewidths=3.5, zorder=3)
 
 # XOR 데이터 포인트
 xor_labels = np.array([0, 1, 1, 0])
 ax.scatter(X[xor_labels==0, 0], X[xor_labels==0, 1],
            color='white', edgecolors='#888888', s=400, linewidth=2.5,
-           zorder=5, label='Class 0 (False): (0,0) (1,1)')
+           zorder=5, label='Class 0 (False)')
 ax.scatter(X[xor_labels==1, 0], X[xor_labels==1, 1],
            color='#111111', edgecolors='white', s=400, linewidth=2.5,
-           zorder=5, label='Class 1 (True): (0,1) (1,0)')
+           zorder=5, label='Class 1 (True)')
 
+# ── 범례 설정 (그래프 밖으로 이동) ──
 from matplotlib.lines import Line2D
 ax.legend(handles=[
     Line2D([0],[0], color=C_MAGENTA, linewidth=3, label='Decision Boundary (p=0.5)'),
     Line2D([0],[0], marker='o', color='w', markerfacecolor='white',
-           markeredgecolor='#888888', markersize=12, label='Class 0 (False)'),
+           markeredgecolor='#888888', markersize=10, label='Class 0 (False)'),
     Line2D([0],[0], marker='o', color='w', markerfacecolor='#111111',
-           markeredgecolor='white', markersize=12, label='Class 1 (True)'),
-], loc='upper right', fontsize=11, framealpha=0.95, edgecolor='#666666')
+           markeredgecolor='white', markersize=10, label='Class 1 (True)'),
+], 
+    loc='upper left', 
+    bbox_to_anchor=(1.05, 1), # 그래프 오른쪽(1.05) 상단(1)에 배치
+    borderaxespad=0., 
+    fontsize=10, 
+    framealpha=0.95, 
+    edgecolor='#666666'
+)
 
+# ── 축 및 스타일 설정 (순서 중요!) ──
+setup_ax(ax, "Step 4: Output Layer", xlabel="Input X₁", ylabel="Input X₂")
+
+# setup_ax 내부의 set_xlim(-3, 3)을 다시 XOR 범위로 덮어씌웁니다.
 ax.set_xticks([0, 0.5, 1])
 ax.set_yticks([0, 0.5, 1])
-ax.set_xlim(-0.5, 1.5)
-ax.set_ylim(-0.5, 1.5)
+ax.set_xlim(-0.2, 1.2)
+ax.set_ylim(-0.2, 1.2)
 ax.set_aspect('equal')
-
-setup_ax(ax, "Step 4: Output Layer — Learned XOR Decision Boundary",
-         xlabel="Input X₁", ylabel="Input X₂")
 ax.grid(True, color='#333333', linestyle='-', linewidth=1, alpha=0.3)
 
 save_fig(4, "output_xor")
