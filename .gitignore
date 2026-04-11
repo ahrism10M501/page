@@ -13,3 +13,8 @@ scripts/.pytest_cache/
 # 빌드 캐시
 blog/.post_cache.json
 blog/.tag_cache.json
+
+# JupyterLite (CI에서 빌드됨)
+lab/
+_jl_contents/
+_site/

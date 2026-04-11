@@ -3,6 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "pyyaml",
+#   "nbformat",
 #   "sentence-transformers",
 #   "scikit-learn",
 #   "numpy",

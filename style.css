@@ -695,3 +695,63 @@ body {
     color: #555;
   }
 }
+
+/* ── Notebook cells ───────────────────────────────────────────── */
+.nb-open-bar {
+  margin: 1rem 0 1.5rem;
+}
+.nb-open-btn {
+  display: inline-block;
+  padding: 0.45rem 1.1rem;
+  background: var(--pico-primary-background, #dc00c9);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.nb-open-btn:hover { opacity: 0.82; color: #fff; }
+
+.nb-cell { margin: 0.6rem 0; }
+.nb-code > pre {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.nb-output {
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 0.6rem 0.9rem;
+  overflow-x: auto;
+}
+.nb-stdout {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #cccccc;
+  white-space: pre-wrap;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.nb-error {
+  margin: 0;
+  color: #ff5555;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.nb-html-out table {
+  font-size: 0.82rem;
+  border-collapse: collapse;
+  width: 100%;
+}
+.nb-html-out th, .nb-html-out td {
+  border: 1px solid #2a2a2a;
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+}

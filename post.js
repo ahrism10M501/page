@@ -1,3 +1,66 @@
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderNotebook(nb) {
+  const parts = [];
+  let first = true;
+
+  for (const cell of nb.cells) {
+    const source = Array.isArray(cell.source) ? cell.source.join('') : (cell.source || '');
+    if (!source.trim()) continue;
+
+    // 첫 번째 마크다운 셀이 frontmatter면 건너뜀
+    if (first && cell.cell_type === 'markdown' && source.trim().startsWith('---')) {
+      first = false;
+      continue;
+    }
+    first = false;
+
+    if (cell.cell_type === 'markdown') {
+      parts.push(`<div class="nb-cell nb-markdown">${marked.parse(source)}</div>`);
+    } else if (cell.cell_type === 'code') {
+      let html = `<div class="nb-cell nb-code"><pre><code class="language-python">${escapeHtml(source)}</code></pre>`;
+
+      const outputs = cell.outputs || [];
+      if (outputs.length > 0) {
+        html += '<div class="nb-output">';
+        for (const out of outputs) {
+          if (out.output_type === 'stream') {
+            const text = Array.isArray(out.text) ? out.text.join('') : (out.text || '');
+            html += `<pre class="nb-stdout">${escapeHtml(text)}</pre>`;
+          } else if (out.output_type === 'display_data' || out.output_type === 'execute_result') {
+            const data = out.data || {};
+            if (data['image/png']) {
+              html += `<img src="data:image/png;base64,${data['image/png']}" style="max-width:100%;display:block;margin:0.5rem 0">`;
+            } else if (data['image/svg+xml']) {
+              const svg = Array.isArray(data['image/svg+xml']) ? data['image/svg+xml'].join('') : data['image/svg+xml'];
+              html += `<div class="nb-svg">${svg}</div>`;
+            } else if (data['text/html']) {
+              const h = Array.isArray(data['text/html']) ? data['text/html'].join('') : data['text/html'];
+              html += `<div class="nb-html-out">${h}</div>`;
+            } else if (data['text/plain']) {
+              const t = Array.isArray(data['text/plain']) ? data['text/plain'].join('') : data['text/plain'];
+              html += `<pre class="nb-stdout">${escapeHtml(t)}</pre>`;
+            }
+          } else if (out.output_type === 'error') {
+            html += `<pre class="nb-error">${escapeHtml((out.ename || '') + ': ' + (out.evalue || ''))}</pre>`;
+          }
+        }
+        html += '</div>';
+      }
+
+      html += '</div>';
+      parts.push(html);
+    }
+  }
+  return parts.join('\n');
+}
+
 (async () => {
   const slug = getSlugFromURL();
 
@@ -32,7 +95,22 @@
       post.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
   }
 
-  if (mdRes.ok) {
+  if (post && post.notebook) {
+    // JupyterLite 실행 버튼 삽입
+    const labUrl = `../../lab/index.html?path=posts/${slug}/content.ipynb`;
+    document.getElementById('post-header').insertAdjacentHTML('afterend',
+      `<div class="nb-open-bar"><a href="${labUrl}" class="nb-open-btn" target="_blank" rel="noopener">▶ JupyterLite에서 실행</a></div>`
+    );
+    // 노트북 fetch 및 정적 렌더링
+    const nbRes = await fetch('./content.ipynb');
+    if (nbRes.ok) {
+      const nb = await nbRes.json();
+      document.getElementById('post-content').innerHTML = renderNotebook(nb);
+      document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    } else {
+      document.getElementById('post-content').innerHTML = '<p>노트북을 불러올 수 없습니다.</p>';
+    }
+  } else if (mdRes.ok) {
     const md = await mdRes.text();
     document.getElementById('post-content').innerHTML = marked.parse(stripFrontmatter(md));
     document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));

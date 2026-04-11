@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... — ahrism</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github-dark.min.css">
+</head>
+<body>
+  <aside id="sidebar">
+    <div class="sidebar-icons">
+      <button class="sidebar-btn" data-label="Home" data-href="../../">⌂</button>
+      <button class="sidebar-btn" data-panel="about" data-label="About">◉</button>
+      <button class="sidebar-btn active" data-label="Blog" data-href="../../blog/">≡</button>
+      <button class="sidebar-btn" data-label="GitHub" data-href="../../github/">⬡</button>
+    </div>
+    <div id="panel-about" class="sidebar-panel">
+      <div class="label">About</div>
+      <p class="panel-placeholder">준비 중</p>
+    </div>
+  </aside>
+  <main class="container">
+    <a href="../../blog/" style="font-size:0.85rem;color:#444">← Blog</a>
+    <div id="post-header" class="editorial-header">
+      <div class="post-meta" id="post-meta"></div>
+      <h1 id="post-title"></h1>
+    </div>
+    <article id="post-content" class="post-content"></article>
+    <!-- Related posts subgraph -->
+    <section id="related-graph-section" style="display:none">
+      <div class="label">Related Posts</div>
+      <div class="depth-control">
+        <label for="depth-slider">깊이:</label>
+        <input type="range" id="depth-slider" min="2" max="5" value="2">
+        <span class="depth-value" id="depth-value">2</span>
+      </div>
+      <div class="graph-container subgraph" id="subgraph-container"></div>
+    </section>
+  </main>
+  <footer class="container" style="margin-top: 3rem; padding-bottom: 2rem;">
+    <div style="color: var(--pico-muted-color); font-size: 0.75rem; margin-bottom: 0.5rem;">
+      Built with PicoCSS & Cytoscape.js
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid var(--pico-muted-border-color); padding-top: 1.5rem;">
+
+      <div style="flex: 1; min-width: 120px;">
+        <small>&copy; 2026 ahrism</small>
+      </div>
+
+      <div style="flex: 1; text-align: center; min-width: 100px;">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="secondary" style="text-decoration: none; font-size: 0.85rem; font-weight: bold;">
+          ↑ Top
+        </a>
+      </div>
+
+      <div style="flex: 1; display: flex; gap: 1.5rem; justify-content: flex-end; font-size: 0.85rem; min-width: 200px;">
+        <a href="https://github.com/ahrism10M501" target="_blank" rel="noopener noreferrer" class="secondary">GitHub</a>
+        <a href="https://www.youtube.com/@ahrism-3475" target="_blank" rel="noopener noreferrer" class="secondary">YouTube</a>
+        <a href="mailto:l.all.means@gmail.com" class="secondary">Contact</a>
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="../../app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+  <script src="../../graph.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script src="../../post.js"></script>
+  <script src="../../sidebar.js"></script>
+</body>
+</html>
