@@ -230,6 +230,7 @@ function highlightNodes(cy, matchedIds) {
   const idSet = new Set(matchedIds);
   cy.batch(function () {
     cy.nodes().forEach(function (node) {
+      if (node.hasClass('supernode')) return;
       if (idSet.has(node.data('id'))) {
         node.removeClass('dimmed').addClass('highlighted');
       } else {
