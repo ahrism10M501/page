@@ -12,9 +12,15 @@ function initGraph(container, graphData, options = {}) {
   const elements = [];
 
   for (const node of graphData.nodes) {
+    const tagClasses = [];
+    if (Array.isArray(node.tags)) {
+      if (node.tags.includes('ipynb')) tagClasses.push('tag-ipynb');
+      if (node.tags.includes('project')) tagClasses.push('tag-project');
+    }
     elements.push({
       group: 'nodes',
       data: { id: node.id, label: node.title, ...node },
+      classes: tagClasses.join(' '),
     });
   }
 
@@ -64,6 +70,28 @@ function initGraph(container, graphData, options = {}) {
           'transition-property': 'line-color',
           'transition-duration': '300ms',
           'transition-timing-function': 'ease-in-out',
+        },
+      },
+      {
+        selector: 'node.tag-ipynb',
+        style: {
+          'background-color': '#00aaff',
+          'border-color': '#00aaff',
+        },
+      },
+      {
+        selector: 'node.tag-project',
+        style: {
+          'background-color': '#0066cc',
+          'border-color': '#0066cc',
+        },
+      },
+      {
+        selector: 'node.tag-ipynb.tag-project',
+        style: {
+          'background-color': '#00aaff',
+          'border-color': '#0066cc',
+          'border-width': 3,
         },
       },
       {
