@@ -14,6 +14,7 @@ Usage:
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 from posts_list_update import parse_frontmatter_text
@@ -33,7 +34,7 @@ def scan_twinkles() -> list[dict]:
             continue
         twinkles.append({
             "slug": path.stem,
-            "date": str(fm.get("date", "")),
+            "date": str(fm.get("date", date.today())),
             "title": str(fm["title"]),
             "tags": [str(t) for t in fm.get("tags", [])],
             "content": body.strip(),

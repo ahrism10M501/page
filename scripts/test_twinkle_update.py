@@ -70,3 +70,13 @@ def test_update_twinkles_json_no_change(monkeypatch, tmp_path):
     twinkle_update.update_twinkles_json(twinkles)
     changed = twinkle_update.update_twinkles_json(twinkles)
     assert changed is False
+
+
+def test_scan_twinkles_missing_date_defaults_to_today(monkeypatch, tmp_path):
+    from datetime import date
+    import twinkle_update
+    monkeypatch.setattr(twinkle_update, "TWINKLE_DIR", tmp_path)
+    make_md(tmp_path, "2026-04-24-nodate.md", "title: 날짜없음", "내용")
+    result = twinkle_update.scan_twinkles()
+    assert len(result) == 1
+    assert result[0]["date"] == str(date.today())
