@@ -821,3 +821,149 @@ body {
   color: #444;
   min-width: 2rem;
 }
+
+/* ── Twinkle 공간 ─────────────────────────────────── */
+
+.twinkle-layout {
+  display: flex;
+  gap: 0;
+  min-height: 60vh;
+}
+
+.twinkle-feed {
+  flex: 1;
+  padding: 1rem 1rem 1rem 0;
+  min-width: 0;
+}
+
+.twinkle-archive {
+  width: 200px;
+  flex-shrink: 0;
+  border-left: 1px solid #1e1e1e;
+  background: #080808;
+  display: flex;
+  position: relative;
+}
+
+.twinkle-archive-resize {
+  cursor: col-resize;
+  width: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 1rem;
+  color: #2a2a2a;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.twinkle-archive-inner {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.twinkle-card {
+  border: 1px solid #2a0a28;
+  background: #0d0d0d;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.twinkle-card.anchor {
+  border-color: #4a62ff;
+}
+
+.twinkle-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.twinkle-card-date {
+  color: #dc00c9;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.twinkle-card-body {
+  color: #ccc;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.twinkle-more-btn {
+  background: none;
+  border: none;
+  color: #4a62ff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  display: block;
+  margin-top: 0.4rem;
+}
+
+.archive-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 0.75rem;
+}
+
+.archive-tag-chip {
+  display: inline-block;
+  font-size: 0.6rem;
+  color: #444;
+  border: 1px solid #222;
+  padding: 0.1rem 0.4rem;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s, background 0.1s;
+}
+
+.archive-tag-chip:hover {
+  color: #777;
+  border-color: #444;
+}
+
+.archive-tag-chip.active {
+  color: #4a62ff;
+  border-color: rgba(74, 98, 255, 0.5);
+  background: rgba(74, 98, 255, 0.07);
+}
+
+.archive-list {
+  border-left: 1px solid #1e1e1e;
+  padding-left: 0.5rem;
+}
+
+.archive-item {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #111;
+  cursor: pointer;
+  font-size: 0.68rem;
+  color: #444;
+  transition: color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archive-item:hover { color: #777; }
+.archive-item.active { color: #dc00c9; }
+
+.archive-date {
+  color: #2a2a2a;
+  font-size: 0.6rem;
+  margin-right: 0.3rem;
+}
+
+@media (max-width: 767px) {
+  .twinkle-archive { display: none; }
+  .twinkle-feed { padding: 1rem 0; }
+}
