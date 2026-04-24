@@ -1,3 +1,28 @@
+function protectMath(src) {
+  const store = [];
+  // Block math ($$...$$) first to avoid matching single $ inside
+  let out = src.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
+    store.push({ block: true, math });
+    return `MATHPH${store.length - 1}BLK`;
+  });
+  // Inline math ($...$) — single line, non-empty
+  out = out.replace(/\$([^\n$]+?)\$/g, (_, math) => {
+    store.push({ block: false, math });
+    return `MATHPH${store.length - 1}INL`;
+  });
+  return { out, store };
+}
+
+function restoreMath(html, store) {
+  html = html.replace(/MATHPH(\d+)BLK/g, (_, i) =>
+    katex.renderToString(store[+i].math, { displayMode: true, throwOnError: false })
+  );
+  html = html.replace(/MATHPH(\d+)INL/g, (_, i) =>
+    katex.renderToString(store[+i].math, { displayMode: false, throwOnError: false })
+  );
+  return html;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -22,7 +47,8 @@ function renderNotebook(nb) {
     first = false;
 
     if (cell.cell_type === 'markdown') {
-      parts.push(`<div class="nb-cell nb-markdown">${marked.parse(source)}</div>`);
+      const { out, store } = protectMath(source);
+      parts.push(`<div class="nb-cell nb-markdown">${restoreMath(marked.parse(out), store)}</div>`);
     } else if (cell.cell_type === 'code') {
       let html = `<div class="nb-cell nb-code"><pre><code class="language-python">${escapeHtml(source)}</code></pre>`;
 
@@ -64,7 +90,18 @@ function renderNotebook(nb) {
 (async () => {
   const slug = getSlugFromURL();
 
-  // Configure marked extension before parallel fetches resolve
+  // Configure marked: mermaid code blocks + YouTube extension
+  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+
+  marked.use({
+    renderer: {
+      code({ text, lang }) {
+        if (lang === 'mermaid') return `<div class="mermaid">${text}</div>`;
+        return false;
+      }
+    }
+  });
+
   marked.use({ extensions: [{
     name: 'youtube',
     level: 'block',
@@ -107,13 +144,16 @@ function renderNotebook(nb) {
       const nb = await nbRes.json();
       document.getElementById('post-content').innerHTML = renderNotebook(nb);
       document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+      mermaid.run();
     } else {
       document.getElementById('post-content').innerHTML = '<p>노트북을 불러올 수 없습니다.</p>';
     }
   } else if (mdRes.ok) {
     const md = await mdRes.text();
-    document.getElementById('post-content').innerHTML = marked.parse(stripFrontmatter(md));
+    const { out, store } = protectMath(stripFrontmatter(md));
+    document.getElementById('post-content').innerHTML = restoreMath(marked.parse(out), store);
     document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    mermaid.run();
   } else {
     document.getElementById('post-content').innerHTML = '<p>글을 불러올 수 없습니다.</p>';
   }
