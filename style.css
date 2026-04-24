@@ -963,7 +963,76 @@ body {
   margin-right: 0.3rem;
 }
 
+.twinkle-feed-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.twinkle-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid #1a1a1a;
+  margin-top: 0.25rem;
+}
+
+.twinkle-nav-btn {
+  background: none;
+  border: 1px solid rgba(74, 98, 255, 0.3);
+  color: #4a62ff;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.twinkle-nav-btn:disabled {
+  color: #252525;
+  border-color: #1a1a1a;
+  cursor: default;
+}
+
+.twinkle-nav-info {
+  font-size: 0.6rem;
+  color: #333;
+}
+
+.twinkle-mobile-tags {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 0.4rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.twinkle-mobile-tag-chip {
+  display: inline-block;
+  font-size: 0.62rem;
+  color: #444;
+  border: 1px solid #222;
+  padding: 0.15rem 0.45rem;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s;
+}
+
+.twinkle-mobile-tag-chip:hover {
+  color: #777;
+  border-color: #444;
+}
+
+.twinkle-mobile-tag-chip.active {
+  color: #dc00c9;
+  border-color: rgba(220, 0, 201, 0.4);
+  background: rgba(220, 0, 201, 0.07);
+}
+
 @media (max-width: 767px) {
   .twinkle-archive { display: none; }
   .twinkle-feed { padding: 1rem 0; }
+  .twinkle-mobile-tags { display: flex; }
 }
