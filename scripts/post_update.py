@@ -28,6 +28,7 @@ from auto_tag import (
     init_tags, assign_tags, get_post_embeddings,
     load_tag_cache, normalize_tag, save_tags,
 )
+from twinkle_update import update_twinkles_json
 
 
 def main():
@@ -90,6 +91,10 @@ def main():
     if not args.posts_only:
         # 태그 반영된 posts로 graph.json 재생성
         update_graph(posts, force=False)
+
+    # twinkle (ML 없음, 항상 실행)
+    twinkle_changed = update_twinkles_json()
+    print("twinkles.json 업데이트됨" if twinkle_changed else "twinkles.json 변경 없음")
 
 
 if __name__ == "__main__":
