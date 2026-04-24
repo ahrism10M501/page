@@ -34,3 +34,7 @@ MATCH_THRESHOLD: float = 0.4
 NEW_TAG_DEDUP_THRESHOLD: float = 0.8
 MAX_TAGS: int = 5
 MIN_TAGS: int = 2
+
+# Supernode clustering
+MIN_POSTS_FOR_SUPERNODES: int = 30
+SUPERNODE_DISTANCE_THRESHOLD: float = 0.5

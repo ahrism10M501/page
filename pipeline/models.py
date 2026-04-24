@@ -45,9 +45,19 @@ class GraphEdge(TypedDict):
     weight: float
 
 
-class GraphData(TypedDict):
+class SupernodeData(TypedDict):
+    id: str
+    label: str
+    tags: list[str]
+
+
+class _GraphDataRequired(TypedDict):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
+
+
+class GraphData(_GraphDataRequired, total=False):
+    supernodes: list[SupernodeData]
 
 
 class CacheEntry(TypedDict):
