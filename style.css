@@ -895,7 +895,52 @@ body {
   color: #ccc;
   font-size: 0.85rem;
   line-height: 1.6;
-  white-space: pre-wrap;
+}
+
+.twinkle-card-body p {
+  margin: 0 0 0.4rem 0;
+}
+
+.twinkle-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.twinkle-card-body code {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.twinkle-card-body pre {
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  padding: 0.6rem 0.75rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.twinkle-card-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #7ec8e3;
+  font-size: 0.78rem;
+}
+
+.twinkle-card-body ul,
+.twinkle-card-body ol {
+  margin: 0.3rem 0;
+  padding-left: 1.2rem;
+}
+
+.twinkle-card-body li {
+  margin-bottom: 0.15rem;
+}
+
+.twinkle-card-body strong {
+  color: #ddd;
 }
 
 .twinkle-more-btn {
