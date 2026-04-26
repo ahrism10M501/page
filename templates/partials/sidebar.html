@@ -1,3 +1,25 @@
+<header id="mobile-site-header">
+  <button id="mobile-nav-toggle" type="button" aria-label="메뉴 열기" aria-controls="mobile-nav-drawer" aria-expanded="false">☰</button>
+  <a class="mobile-site-title" href="{{ root }}">Ahrism</a>
+  <span class="mobile-current-page">
+    {% for item in nav %}
+    {% if item.id == current_page %}{{ item.icon }} {{ item.label }}{% endif %}
+    {% endfor %}
+  </span>
+</header>
+
+<aside id="mobile-nav-drawer" aria-label="모바일 내비게이션" aria-hidden="true" inert>
+  <div class="mobile-nav-drawer-inner">
+    {% for item in nav %}
+    <button class="mobile-nav-link{% if item.id == current_page %} active{% endif %}" data-href="{{ root }}{{ item.href }}" tabindex="-1">
+      <span class="mobile-nav-icon">{{ item.icon }}</span>
+      <span>{{ item.label }}</span>
+    </button>
+    {% endfor %}
+  </div>
+</aside>
+<div id="mobile-nav-backdrop"></div>
+
 <button id="sidebar-toggle" aria-label="메뉴">☰</button>
 <aside id="sidebar">
   <div class="sidebar-icons">

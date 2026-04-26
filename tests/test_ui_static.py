@@ -48,3 +48,32 @@ def test_semantic_color_tokens_use_valid_hex_values():
             f"{token} uses invalid hex color {value}"
         )
         assert value.lower() != "#6d4ef0", f"{token} uses rejected hover typo {value}"
+
+
+def test_sidebar_partial_contains_mobile_header_and_drawer():
+    html = read("templates/partials/sidebar.html")
+    assert 'id="mobile-site-header"' in html
+    assert 'id="mobile-nav-toggle"' in html
+    assert 'id="mobile-nav-drawer"' in html
+    assert 'mobile-nav-link' in html
+    assert 'aria-expanded="false"' in html
+    assert 'aria-hidden="true"' in html
+    assert "inert" in html
+
+
+def test_sidebar_js_controls_mobile_drawer():
+    js = read("src/sidebar.js")
+    assert "mobile-nav-toggle" in js
+    assert "mobile-nav-drawer" in js
+    assert "mobile-nav-open" in js
+    assert "setAttribute('aria-expanded'" in js
+    assert "setAttribute('aria-hidden'" in js
+    assert ".inert" in js
+    assert "tabIndex" in js
+    assert "querySelectorAll('.mobile-nav-link')" in js
+
+
+def test_mobile_drawer_has_keyboard_focus_styles():
+    css = read("style.css")
+    assert "#mobile-nav-toggle:focus-visible" in css
+    assert ".mobile-nav-link:focus-visible" in css

@@ -1,6 +1,9 @@
-// sidebar.js — shared sidebar: panel toggle, navigation, outside-click close
+// sidebar.js — shared navigation: desktop sidebar and mobile drawer
 (function () {
-  // 패널 토글 버튼 (data-panel 속성 있음)
+  function navigateTo(href) {
+    if (href) window.location.href = href;
+  }
+
   document.querySelectorAll('.sidebar-btn[data-panel]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var panelId = 'panel-' + btn.dataset.panel;
@@ -14,14 +17,12 @@
     });
   });
 
-  // 이동 버튼 (data-href 속성 있음)
-  document.querySelectorAll('.sidebar-btn[data-href]').forEach(function (btn) {
+  document.querySelectorAll('.sidebar-btn[data-href], .mobile-nav-link[data-href]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      window.location.href = btn.dataset.href;
+      navigateTo(btn.dataset.href);
     });
   });
 
-  // 사이드바 외부 클릭 시 패널 닫기
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#sidebar')) {
       document.querySelectorAll('.sidebar-panel').forEach(function (p) {
@@ -30,23 +31,55 @@
     }
   });
 
-  // 모바일 햄버거 토글
-  var toggleBtn = document.getElementById('sidebar-toggle');
+  var legacyToggleBtn = document.getElementById('sidebar-toggle');
   var sidebar = document.getElementById('sidebar');
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', function (e) {
+  if (legacyToggleBtn && sidebar) {
+    legacyToggleBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       sidebar.classList.toggle('open');
-      toggleBtn.classList.toggle('active');
+      legacyToggleBtn.classList.toggle('active');
     });
-    // 사이드바 외부 탭 시 닫기
     document.addEventListener('click', function (e) {
       if (sidebar.classList.contains('open') &&
           !e.target.closest('#sidebar') &&
-          e.target !== toggleBtn) {
+          e.target !== legacyToggleBtn) {
         sidebar.classList.remove('open');
-        toggleBtn.classList.remove('active');
+        legacyToggleBtn.classList.remove('active');
       }
+    });
+  }
+
+  var mobileToggle = document.getElementById('mobile-nav-toggle');
+  var mobileDrawer = document.getElementById('mobile-nav-drawer');
+  var mobileBackdrop = document.getElementById('mobile-nav-backdrop');
+
+  function setMobileDrawer(open) {
+    if (!mobileToggle || !mobileDrawer) return;
+    document.body.classList.toggle('mobile-nav-open', open);
+    mobileDrawer.classList.toggle('open', open);
+    mobileDrawer.inert = !open;
+    mobileDrawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+    mobileToggle.classList.toggle('active', open);
+    mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    mobileDrawer.querySelectorAll('.mobile-nav-link').forEach(function (link) {
+      link.tabIndex = open ? 0 : -1;
+    });
+  }
+
+  if (mobileToggle && mobileDrawer) {
+    mobileToggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setMobileDrawer(!mobileDrawer.classList.contains('open'));
+    });
+
+    if (mobileBackdrop) {
+      mobileBackdrop.addEventListener('click', function () {
+        setMobileDrawer(false);
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setMobileDrawer(false);
     });
   }
 })();
