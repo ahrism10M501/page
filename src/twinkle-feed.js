@@ -29,6 +29,10 @@
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function initTwinkleFeed(opts) {
     const ids = opts.ids;
     const sessionKey = opts.sessionKey;
@@ -120,7 +124,7 @@
       const tagLabels = ['전체', ...allTags];
       el.innerHTML = tagLabels.map(tag => {
         const isActive = tag === '전체' ? !state.tag : state.tag === tag;
-        return `<span class="${chipClass}${isActive ? ' active' : ''}" data-tag="${tag}">${escapeHtml(tag)}</span>`;
+        return `<button type="button" class="${chipClass}${isActive ? ' active' : ''}" data-tag="${escapeAttr(tag)}" aria-pressed="${isActive ? 'true' : 'false'}">${escapeHtml(tag)}</button>`;
       }).join('');
       el.querySelectorAll('.' + chipClass).forEach(chip => {
         chip.addEventListener('click', () => {

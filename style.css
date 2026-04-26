@@ -1107,11 +1107,18 @@ body {
 }
 
 .archive-tag-chip {
-  display: inline-block;
-  font-size: 0.6rem;
-  color: #444;
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
   border: 1px solid #222;
+  background: var(--color-surface);
+  color: #444;
   padding: 0.1rem 0.4rem;
+  font-family: inherit;
+  font-size: 0.6rem;
+  line-height: 1.4;
   cursor: pointer;
   transition: color 0.1s, border-color 0.1s, background 0.1s;
 }
@@ -1190,42 +1197,72 @@ body {
   color: #333;
 }
 
-.twinkle-mobile-tags {
+.twinkle-mobile-filter-panel {
   display: none;
+}
+
+.twinkle-mobile-filter-title {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 0.45rem;
+}
+
+.twinkle-mobile-tags {
+  display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 0.4rem;
   align-items: center;
-  padding: 0.4rem 0;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid #1a1a1a;
 }
 
 .twinkle-mobile-tag-chip {
-  display: inline-block;
-  font-size: 0.62rem;
-  color: #444;
-  border: 1px solid #222;
-  padding: 0.15rem 0.45rem;
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  min-height: 32px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  padding: 0.25rem 0.6rem;
+  font-family: inherit;
   cursor: pointer;
-  transition: color 0.1s, border-color 0.1s;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
 
 .twinkle-mobile-tag-chip:hover {
-  color: #777;
-  border-color: #444;
+  color: var(--color-text);
+  border-color: var(--color-muted-soft);
 }
 
 .twinkle-mobile-tag-chip.active {
   color: var(--color-info);
-  border-color: rgba(74, 158, 255, 0.4);
-  background: rgba(74, 158, 255, 0.07);
+  border-color: color-mix(in srgb, var(--color-info) 46%, transparent);
+  background: color-mix(in srgb, var(--color-info) 10%, transparent);
+}
+
+.archive-tag-chip:focus-visible,
+.twinkle-mobile-tag-chip:focus-visible {
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+  border-color: var(--color-info);
 }
 
 @media (max-width: 767px) {
   .twinkle-archive { display: none; }
   .twinkle-layout { margin-right: 0; }
   .twinkle-feed { padding: 1rem 0; }
-  .twinkle-mobile-tags { display: flex; }
+  .twinkle-mobile-filter-panel {
+    display: block;
+    padding: 0.85rem;
+    margin: 0 0 0.75rem 0;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
 }
 
 /* ── About page ──────────────────────────────────────── */

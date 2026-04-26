@@ -9,6 +9,12 @@ def read(rel_path: str) -> str:
     return (ROOT / rel_path).read_text(encoding="utf-8")
 
 
+def css_rule(css: str, selector: str) -> str:
+    match = re.search(rf"{re.escape(selector)}\s*\{{(?P<body>.*?)\n\}}", css, re.DOTALL)
+    assert match is not None, f"{selector} rule not found"
+    return match.group("body")
+
+
 def test_style_defines_semantic_theme_tokens():
     css = read("style.css")
     for token in [
@@ -77,3 +83,41 @@ def test_mobile_drawer_has_keyboard_focus_styles():
     css = read("style.css")
     assert "#mobile-nav-toggle:focus-visible" in css
     assert ".mobile-nav-link:focus-visible" in css
+
+
+def test_twinkle_template_has_mobile_filter_region():
+    html = read("templates/pages/twinkle.html")
+    assert 'class="twinkle-mobile-filter-panel"' in html
+    assert 'id="mobile-tags"' in html
+    assert '모바일 트윙클 필터' in html
+
+
+def test_twinkle_tags_render_as_buttons_with_pressed_state():
+    js = read("src/twinkle-feed.js")
+    assert '<button type="button"' in js
+    assert "aria-pressed" in js
+    assert "chip.dataset.tag" in js
+
+
+def test_twinkle_tag_data_attribute_uses_attribute_safe_escape():
+    js = read("src/twinkle-feed.js")
+    assert "function escapeAttr" in js
+    assert ".replace(/&/g, '&amp;')" in js
+    assert ".replace(/\"/g, '&quot;')" in js
+    assert ".replace(/'/g, '&#39;')" in js
+    assert 'data-tag="${escapeAttr(tag)}"' in js
+
+
+def test_twinkle_tag_buttons_have_focus_visible_styles():
+    css = read("style.css")
+    assert ".archive-tag-chip:focus-visible" in css
+    assert ".twinkle-mobile-tag-chip:focus-visible" in css
+
+
+def test_archive_tag_button_has_reset_styles():
+    css = read("style.css")
+    archive_rule = css_rule(css, ".archive-tag-chip")
+    assert "appearance: none;" in archive_rule
+    assert "background:" in archive_rule
+    assert "font-family: inherit;" in archive_rule
+    assert "box-sizing: border-box;" in archive_rule
