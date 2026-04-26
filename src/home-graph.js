@@ -1,4 +1,4 @@
-// home-graph.js — home page graph: init, random node pulse, pull-to-expand, zoom presets.
+// home-graph.js — home page graph: init, random node pulse, fullscreen mode, zoom presets.
 // Reads data URLs from current script's dataset:
 //   data-graph, data-posts, data-twinkles, data-posts-base
 //
@@ -10,8 +10,8 @@
   const POSTS_URL = ds.posts;
   const TWINKLES_URL = ds.twinkles;
   const POSTS_BASE = ds.postsBase || '../posts/';
+  let zoomBaseZoom = null;
 
-  startPullToExpand();
   startZoomPresets();
   startGraph();
 
@@ -26,6 +26,7 @@
     if (!hasGraph) {
       document.getElementById('graph-container').style.display = 'none';
       document.getElementById('graph-fallback').style.display = '';
+      disableGraphControlsForFallback();
       renderPostList(posts, document.getElementById('posts-container'), POSTS_BASE);
       return;
     }
@@ -37,6 +38,7 @@
     });
     window.__indexCy = cy;
     startPulse(cy);
+    startFullscreenMode(cy);
   }
 
   function startPulse(cy) {
@@ -77,74 +79,96 @@
     }
   }
 
-  function startPullToExpand() {
-    const gc = document.getElementById('graph-container');
-    if (!gc) return;
-    const SNAP_THRESHOLD = 80;
-    const DEFAULT_VH = window.innerWidth <= 640 ? 40 : 45;
-    const EXPANDED_VH = 100;
-    const EASE = '0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
-    let expanded = false, startY = 0, dragActive = false;
-    const isMobile = () => window.innerWidth <= 640;
-    const baseH = () => DEFAULT_VH / 100 * window.innerHeight;
-    const setHPx = px => { gc.style.transition = 'none'; gc.style.height = px + 'px'; };
-    const snapTo = vh => { gc.style.transition = 'height ' + EASE; gc.style.height = vh + 'vh'; };
-    const snapExpand = () => { expanded = true; snapTo(EXPANDED_VH); document.getElementById('post-graph').classList.add('expanded'); };
-    const snapCollapse = () => { expanded = false; snapTo(DEFAULT_VH); document.getElementById('post-graph').classList.remove('expanded'); };
+  function refreshGraphFrame(cy) {
+    requestAnimationFrame(() => {
+      cy.resize();
+      cy.fit(undefined, 36);
+      zoomBaseZoom = cy.zoom();
+      resetZoomPresetState();
+    });
+  }
 
-    const back = document.getElementById('graph-back-btn');
-    if (back) back.addEventListener('click', () => { snapCollapse(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  function disableGraphControlsForFallback() {
+    const toolbar = document.querySelector('.graph-toolbar');
+    const openBtn = document.getElementById('graph-open-btn');
+    if (openBtn) {
+      openBtn.disabled = true;
+      openBtn.setAttribute('aria-disabled', 'true');
+      openBtn.setAttribute('aria-expanded', 'false');
+    }
+    if (toolbar) toolbar.hidden = true;
+    setZoomPresetsFocusable(false);
+  }
 
-    document.addEventListener('touchstart', e => {
-      if (window.scrollY > 2 && !expanded) return;
-      startY = e.touches[0].clientY;
-      dragActive = true;
-    }, { passive: true });
+  function startFullscreenMode(cy) {
+    const section = document.getElementById('post-graph');
+    const stage = document.getElementById('graph-stage');
+    const openBtn = document.getElementById('graph-open-btn');
+    const closeBtn = document.getElementById('graph-close-btn');
+    if (!section || !stage || !openBtn || !closeBtn) return;
 
-    document.addEventListener('touchmove', e => {
-      if (!dragActive) return;
-      const delta = e.touches[0].clientY - startY;
-      if (delta <= 0 && !expanded) { dragActive = false; return; }
-      if (!expanded) setHPx(baseH() + delta * 0.4);
-    }, { passive: true });
+    function open() {
+      section.classList.add('graph-fullscreen');
+      document.body.classList.add('graph-modal-open');
+      openBtn.setAttribute('aria-expanded', 'true');
+      stage.setAttribute('role', 'dialog');
+      stage.setAttribute('aria-modal', 'true');
+      stage.setAttribute('aria-label', 'Knowledge Graph');
+      setZoomPresetsFocusable(true);
+      refreshGraphFrame(cy);
+      closeBtn.focus();
+    }
 
-    document.addEventListener('touchend', e => {
-      if (!dragActive) return;
-      dragActive = false;
-      if (!expanded) {
-        if (gc.offsetHeight - baseH() > SNAP_THRESHOLD) snapExpand();
-        else snapCollapse();
-      } else if (!isMobile()) {
-        if (e.changedTouches[0].clientY - startY < -SNAP_THRESHOLD) snapCollapse();
+    function close() {
+      section.classList.remove('graph-fullscreen');
+      document.body.classList.remove('graph-modal-open');
+      openBtn.setAttribute('aria-expanded', 'false');
+      stage.removeAttribute('role');
+      stage.removeAttribute('aria-modal');
+      stage.removeAttribute('aria-label');
+      setZoomPresetsFocusable(false);
+      refreshGraphFrame(cy);
+      openBtn.focus();
+    }
+
+    function getFullscreenFocusables() {
+      const zoomButtons = Array.from(document.querySelectorAll('.zoom-preset'))
+        .filter(el => !el.disabled && el.tabIndex >= 0);
+      return [closeBtn].concat(zoomButtons);
+    }
+
+    function handleFullscreenKeydown(e) {
+      if (!section.classList.contains('graph-fullscreen')) return;
+      if (e.key === 'Escape') {
+        close();
+        e.stopPropagation();
+        return;
       }
-    }, { passive: true });
+      if (e.key === 'Tab') {
+        const focusables = getFullscreenFocusables();
+        if (!focusables.length) return;
 
-    document.addEventListener('scroll', () => {
-      if (expanded && window.scrollY > 10 && !isMobile()) snapCollapse();
-    }, { passive: true });
-
-    let wheelAccum = 0, wheelTimer = null;
-    document.addEventListener('wheel', e => {
-      if (e.deltaY > 0 && window.scrollY < 2 && expanded) { snapCollapse(); return; }
-      if (e.deltaY < 0 && window.scrollY < 2 && !expanded) {
-        wheelAccum += Math.abs(e.deltaY);
-        setHPx(baseH() + wheelAccum * 0.4);
-        if (wheelAccum > SNAP_THRESHOLD) {
-          snapExpand();
-          wheelAccum = 0;
-          clearTimeout(wheelTimer);
-          return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          focusables[focusables.length - 1].focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          focusables[0].focus();
         }
-        clearTimeout(wheelTimer);
-        wheelTimer = setTimeout(() => { wheelAccum = 0; if (!expanded) snapCollapse(); }, 400);
       }
-    }, { passive: true });
+    }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', handleFullscreenKeydown);
   }
 
   function startZoomPresets() {
     const buttons = document.querySelectorAll('.zoom-preset');
     if (!buttons.length) return;
-    let baseZoom = null;
+    setZoomPresetsFocusable(false);
     const center = () => {
       const cy = window.__indexCy;
       if (!cy) return null;
@@ -154,11 +178,23 @@
       btn.addEventListener('click', () => {
         const cy = window.__indexCy;
         if (!cy) return;
-        if (baseZoom === null) baseZoom = cy.zoom();
-        cy.zoom({ level: baseZoom * parseFloat(btn.dataset.zoom), renderedPosition: center() });
+        if (zoomBaseZoom === null) zoomBaseZoom = cy.zoom();
+        cy.zoom({ level: zoomBaseZoom * parseFloat(btn.dataset.zoom), renderedPosition: center() });
         buttons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
+    });
+  }
+
+  function setZoomPresetsFocusable(isFocusable) {
+    document.querySelectorAll('.zoom-preset').forEach(btn => {
+      btn.tabIndex = isFocusable ? 0 : -1;
+    });
+  }
+
+  function resetZoomPresetState() {
+    document.querySelectorAll('.zoom-preset').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.zoom === '1');
     });
   }
 })();
